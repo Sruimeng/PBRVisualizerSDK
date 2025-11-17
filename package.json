@@ -1,5 +1,5 @@
 {
-  "name": "pbr-visualizer-sdk",
+  "name": "@sruim/pbr-visualizer-sdk",
   "version": "1.0.0",
   "description": "专业级多模型状态管理3D渲染架构 - PBR可视化器SDK，支持分层状态管理、物理精确渲染、动态环境系统",
   "module": "./dist/index.mjs",

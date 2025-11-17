@@ -1,4 +1,4 @@
-import { PBRVisualizer } from '../../../dist/index.mjs';
+import { PBRVisualizer } from '@sruim/pbr-visualizer-sdk';
 
 let visualizer: { on: (arg0: string, arg1: { (event: any): void; (stats: any): void; (error: any): void; }) => void; setCamera: (arg0: number[], arg1: number[]) => void; undo: () => void; redo: () => void; shareState: () => any; captureFrame: () => any; setQuality: (arg0: { resolution: number; maxSamples: number; mobileOptimized?: boolean; }) => void; updateModel: (arg0: string, arg1: { materials: { default: { color: string; roughness: number; metalness: number; }; }; }, arg2: { duration: number; }) => any; updateEnvironment: (arg0: { type: string; sphere: { radius: number; pulse: boolean; }; }) => void; };
 let currentState = {
