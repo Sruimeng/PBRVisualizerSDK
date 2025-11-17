@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CubeCamera, WebGLCubeRenderTarget } from 'three';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { QualityConfig, EnvironmentConfig } from '../types/core';
 
 export class EnvironmentSystem {
@@ -7,11 +8,14 @@ export class EnvironmentSystem {
   private currentConfig: EnvironmentConfig;
   private noiseSphere: THREE.Mesh | null = null;
   private environmentScene: THREE.Scene;
-  private environmentCamera: CubeCamera;
-  private pmremRenderTarget: WebGLCubeRenderTarget;
+  private environmentCamera: CubeCamera | null = null;
+  private pmremRenderTarget: WebGLCubeRenderTarget | null = null;
+  private renderer: THREE.WebGLRenderer;
+  private hdrCubeRT: WebGLCubeRenderTarget | null = null;
 
-  constructor(quality: QualityConfig) {
+  constructor(quality: QualityConfig, renderer: THREE.WebGLRenderer) {
     this.quality = quality;
+    this.renderer = renderer;
     this.currentConfig = {
       type: 'noise-sphere',
       sphere: { radius: 0.8, pulse: false }
@@ -38,8 +42,16 @@ export class EnvironmentSystem {
   }
 
   generateEnvironment(): { environmentMap: THREE.Texture; irradianceMap: THREE.Texture } {
-    // 简化实现，返回默认环境贴图
-    return this.generateDefaultMaps();
+    switch (this.currentConfig.type) {
+      case 'noise-sphere':
+        return this.generateNoiseSphereMaps();
+      case 'procedural':
+        return this.generateProceduralMaps();
+      case 'hdr':
+        return this.generateHDRMaps();
+      default:
+        return this.generateDefaultMaps();
+    }
   }
 
   dispose(): void {
@@ -59,7 +71,9 @@ export class EnvironmentSystem {
   }
 
   private initializeEnvironmentCamera(): void {
-    // 简化实现，暂时不初始化相机
+    const size = Math.max(256, Math.floor(512 * this.quality.resolution));
+    this.pmremRenderTarget = new WebGLCubeRenderTarget(size, { format: THREE.RGBAFormat, type: THREE.HalfFloatType });
+    this.environmentCamera = new CubeCamera(0.1, 1000, this.pmremRenderTarget);
   }
 
   private createNoiseSphereEnvironment(sphereConfig?: EnvironmentConfig['sphere']): void {
@@ -148,18 +162,14 @@ export class EnvironmentSystem {
 
   private loadHDREnvironment(hdrConfig?: EnvironmentConfig['hdr']): void {
     if (!hdrConfig?.url) return;
-
-    // 这里可以实现HDR贴图加载
-    // 目前使用占位符
-    this.createProceduralEnvironment({
-      resolution: 512,
-      gradient: {
-        stops: [
-          { position: 0, color: '#87CEEB' },
-          { position: 0.5, color: '#98FB98' },
-          { position: 1, color: '#FFB6C1' }
-        ]
-      }
+    const loader = new RGBELoader();
+    loader.load(hdrConfig.url, (texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      const size = Math.max(256, Math.floor(512 * this.quality.resolution));
+      const cubeRT = new WebGLCubeRenderTarget(size, { format: THREE.RGBAFormat, type: THREE.HalfFloatType });
+      cubeRT.fromEquirectangularTexture(this.renderer, texture);
+      this.hdrCubeRT = cubeRT;
+      texture.dispose();
     });
   }
 
@@ -216,28 +226,43 @@ export class EnvironmentSystem {
   }
 
   private generateNoiseSphereMaps(): { environmentMap: THREE.Texture; irradianceMap: THREE.Texture } {
-    // 渲染环境到立方体贴图
-    this.environmentCamera.update(this.renderer, this.environmentScene);
-    
-    return {
-      environmentMap: this.pmremRenderTarget.texture,
-      irradianceMap: this.pmremRenderTarget.texture
-    };
+    if (this.environmentCamera && this.pmremRenderTarget) {
+      // 更新时间以驱动动态噪波
+      const children = this.environmentScene.children;
+      for (let i = 0; i < children.length; i++) {
+        const obj = children[i] as any;
+        if (obj.material && obj.material.uniforms && obj.material.uniforms.time) {
+          obj.material.uniforms.time.value = performance.now() * 0.001;
+        }
+      }
+      this.environmentCamera.update(this.renderer, this.environmentScene);
+      return {
+        environmentMap: this.pmremRenderTarget.texture,
+        irradianceMap: this.pmremRenderTarget.texture
+      };
+    }
+    return this.generateDefaultMaps();
   }
 
   private generateHDRMaps(): { environmentMap: THREE.Texture; irradianceMap: THREE.Texture } {
-    // 这里应该加载和生成HDR环境贴图
+    if (this.hdrCubeRT) {
+      return {
+        environmentMap: this.hdrCubeRT.texture,
+        irradianceMap: this.hdrCubeRT.texture
+      };
+    }
     return this.generateDefaultMaps();
   }
 
   private generateProceduralMaps(): { environmentMap: THREE.Texture; irradianceMap: THREE.Texture } {
-    // 渲染程序化环境
-    this.environmentCamera.update(this.renderer, this.environmentScene);
-    
-    return {
-      environmentMap: this.pmremRenderTarget.texture,
-      irradianceMap: this.pmremRenderTarget.texture
-    };
+    if (this.environmentCamera && this.pmremRenderTarget) {
+      this.environmentCamera.update(this.renderer, this.environmentScene);
+      return {
+        environmentMap: this.pmremRenderTarget.texture,
+        irradianceMap: this.pmremRenderTarget.texture
+      };
+    }
+    return this.generateDefaultMaps();
   }
 
   private generateDefaultMaps(): { environmentMap: THREE.Texture; irradianceMap: THREE.Texture } {

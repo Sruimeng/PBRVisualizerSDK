@@ -15,26 +15,19 @@ export class PMREMGenerator {
     envMap: THREE.Texture; 
     irradiance: THREE.Texture 
   } {
-    // 检查缓存
     const cacheKey = this.generateCacheKey(environmentMap);
     if (this.cachedPMREMs.has(cacheKey)) {
       const cached = this.cachedPMREMs.get(cacheKey)!;
-      return {
-        envMap: cached.texture,
-        irradiance: cached.texture
-      };
+      return { envMap: cached.texture, irradiance: cached.texture };
     }
-
-    // 生成PMREM
-    const pmremRenderTarget = this.pmremGenerator.fromEquirectangular(environmentMap);
-    
-    // 缓存结果
+    let pmremRenderTarget: THREE.WebGLCubeRenderTarget;
+    if ((environmentMap as any).isCubeTexture) {
+      pmremRenderTarget = this.pmremGenerator.fromCubemap(environmentMap as unknown as THREE.CubeTexture);
+    } else {
+      pmremRenderTarget = this.pmremGenerator.fromEquirectangular(environmentMap);
+    }
     this.cachedPMREMs.set(cacheKey, pmremRenderTarget);
-
-    return {
-      envMap: pmremRenderTarget.texture,
-      irradiance: pmremRenderTarget.texture
-    };
+    return { envMap: pmremRenderTarget.texture, irradiance: pmremRenderTarget.texture };
   }
 
   generateFromCubeMap(cubeMap: THREE.CubeTexture): { 
@@ -57,6 +50,17 @@ export class PMREMGenerator {
     return {
       envMap: pmremRenderTarget.texture,
       irradiance: pmremRenderTarget.texture
+    };
+  }
+
+  generateFromScene(scene: THREE.Scene): {
+    envMap: THREE.Texture;
+    irradiance: THREE.Texture;
+  } {
+    const pmremRenderTarget = this.pmremGenerator.fromScene(scene);
+    return {
+      envMap: pmremRenderTarget.texture,
+      irradiance: pmremRenderTarget.texture,
     };
   }
 

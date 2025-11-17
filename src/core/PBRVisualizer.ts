@@ -43,7 +43,6 @@ import {
 import { StateMachine } from './StateMachine';
 import { Renderer } from './Renderer';
 import { ModelManager } from './ModelManager';
-import { EnvironmentSystem } from './EnvironmentSystem';
 import { QualityDetector } from './QualityDetector';
 
 export class PBRVisualizer extends BaseEmitter {
@@ -51,7 +50,6 @@ export class PBRVisualizer extends BaseEmitter {
   private renderer: Renderer;
   private stateMachine: StateMachine;
   private modelManager: ModelManager;
-  private environmentSystem: EnvironmentSystem;
   private qualityDetector: QualityDetector;
   private isDisposed = false;
   private performanceMonitor: number | null = null;
@@ -77,8 +75,6 @@ export class PBRVisualizer extends BaseEmitter {
     const initialState = this.createInitialState(options);
     this.stateMachine = new StateMachine(initialState);
 
-    // 初始化环境系统
-    this.environmentSystem = new EnvironmentSystem(finalQuality);
 
     // 初始化模型管理器
     this.modelManager = new ModelManager(finalQuality);
@@ -168,11 +164,19 @@ export class PBRVisualizer extends BaseEmitter {
       const currentState = this.stateMachine.getCurrentState();
       if (currentState) {
         currentState.global.environment = config;
-        this.environmentSystem.updateEnvironment(config);
         this.renderer.updateEnvironment(config);
       }
     } catch (error) {
       this.handleError('render', `Failed to update environment: ${error}`);
+      throw error;
+    }
+  }
+
+  updateBackground(settings: Partial<{ vignette: number; bright: number; radius: number; smooth: number; noise: number }>): void {
+    try {
+      this.renderer.updateBackgroundSettings(settings);
+    } catch (error) {
+      this.handleError('render', `Failed to update background: ${error}`);
       throw error;
     }
   }

@@ -20,6 +20,7 @@ export interface GlobalState {
 // 环境配置
 export interface EnvironmentConfig {
   type: 'noise-sphere' | 'hdr' | 'procedural';
+  intensity?: number;
   sphere?: {
     radius: number;
     pulse: boolean;

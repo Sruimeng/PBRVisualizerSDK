@@ -12,6 +12,7 @@ import {
 import { EnvironmentSystem } from './EnvironmentSystem';
 import { PMREMGenerator } from './PMREMGenerator';
 import { PostProcessor } from './PostProcessor';
+import { createNoiseSphereMaterial } from '../shaders/DynamicNoiseSphere';
 
 export interface RendererOptions {
   container: HTMLElement;
@@ -41,6 +42,14 @@ export class Renderer {
   private pmremRenderTarget: THREE.WebGLRenderTarget;
   private environmentMap: THREE.Texture | null = null;
   private irradianceMap: THREE.Texture | null = null;
+  private envIntensity: number = 1.0;
+  private bgScene: THREE.Scene | null = null;
+  private bgCamera: THREE.OrthographicCamera | null = null;
+  private bgMaterial: THREE.RawShaderMaterial | null = null;
+  private bgMesh: THREE.Mesh | null = null;
+  private iblScene: THREE.Scene | null = null;
+  private iblMaterial: THREE.RawShaderMaterial | null = null;
+  private iblMesh: THREE.Mesh | null = null;
 
   constructor(options: RendererOptions) {
     this.container = options.container;
@@ -52,6 +61,8 @@ export class Renderer {
     this.initializeRenderer();
     this.initializeSystems();
     this.setupPipeline();
+    this.initializeBackground();
+    this.initializeIBLSphere();
   }
 
   async updateModel(modelId: string, state: Partial<ModelState>, options: TransitionOptions): Promise<void> {
@@ -97,6 +108,7 @@ export class Renderer {
 
   updateEnvironment(config: EnvironmentConfig): void {
     this.environmentSystem.updateEnvironment(config);
+    this.envIntensity = config.intensity ?? (config.hdr?.intensity ?? 1.0);
     this.updateEnvironmentMaps();
   }
 
@@ -206,12 +218,13 @@ export class Renderer {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.0;
+    this.renderer.autoClear = false;
 
     this.container.appendChild(this.renderer.domElement);
   }
 
   private initializeSystems(): void {
-    this.environmentSystem = new EnvironmentSystem(this.quality);
+    this.environmentSystem = new EnvironmentSystem(this.quality, this.renderer);
     this.pmremGenerator = new PMREMGenerator(this.renderer);
     this.postProcessor = new PostProcessor(this.renderer, this.camera, this.quality);
   }
@@ -233,45 +246,123 @@ export class Renderer {
     this.composer = null; // 暂时禁用后处理
   }
 
+  private initializeBackground(): void {
+    const width = this.container.clientWidth;
+    const height = this.container.clientHeight;
+    this.bgScene = new THREE.Scene();
+    this.bgCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    this.bgMaterial = createNoiseSphereMaterial({
+      uResolution: new THREE.Vector2(width, height),
+      uTime: 0,
+      uSmooth: 0.15,
+      uRadius: 0.75,
+      uNoise: 0.12,
+      uBgColor1: new THREE.Color(0x0a0e2a),
+      uBgColor2: new THREE.Color(0x4a6fa5)
+    });
+    const plane = new THREE.PlaneGeometry(2, 2);
+    this.bgMesh = new THREE.Mesh(plane, this.bgMaterial);
+    this.bgMesh.frustumCulled = false;
+    this.scene.add(this.bgMesh);
+  }
+
+  private initializeIBLSphere(): void {
+    this.iblScene = new THREE.Scene();
+    const vtx = `
+precision highp float;
+attribute vec3 position;
+uniform mat4 projectionMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 modelMatrix;
+uniform vec3 uCamPos;
+varying vec3 vDir;
+void main(){
+  vec4 wp = modelMatrix * vec4(position,1.0);
+  vDir = normalize(wp.xyz - uCamPos);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+}`;
+    const fsh = `
+precision highp float;
+varying vec3 vDir;
+uniform float uTime;
+uniform float uSmooth;
+uniform float uRadius;
+uniform float uNoise;
+uniform vec3 uBgColor1;
+uniform vec3 uBgColor2;
+uniform vec3 uAxis;
+uniform float uVignette;
+uniform float uBright;
+const float PI = 3.141592653589793;
+const float RECIPROCAL_PI = 0.3183098861837907;
+const float RECIPROCAL_PI2 = 0.15915494309189535;
+float hash12(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+void main(){
+  vec3 dir = normalize(vDir);
+  float ang = acos(clamp(dot(dir, normalize(uAxis)), -1.0, 1.0));
+  float dist = ang / PI;
+  float ring = smoothstep(uRadius, uRadius - uSmooth, dist);
+  float vig = smoothstep(uVignette, 1.0, dist);
+  vec3 outgo = mix(uBgColor1, uBgColor2, ring);
+  outgo += vec3(uBright * (1.0 - vig));
+  float u = atan(dir.z, dir.x) * RECIPROCAL_PI2 + 0.5;
+  float v = asin(clamp(dir.y, -1.0, 1.0)) * RECIPROCAL_PI + 0.5;
+  float noise = hash12(vec2(u,v) * 3.152 + vec2(uTime*0.2, uTime*0.14));
+  outgo += vec3((noise - 0.5) * uNoise * max(ring, 0.0));
+  gl_FragColor = vec4(outgo, 1.0);
+}`;
+    this.iblMaterial = new THREE.RawShaderMaterial({
+      uniforms: {
+        uCamPos: { value: new THREE.Vector3(0,0,0) },
+        uTime: { value: 0 },
+        uSmooth: { value: 0.15 },
+        uRadius: { value: 0.75 },
+        uNoise: { value: 0.08 },
+        uBgColor1: { value: new THREE.Color(0x0f0c29) },
+        uBgColor2: { value: new THREE.Color(0x4a6fa5) },
+        uAxis: { value: new THREE.Vector3(0,0,1) },
+        uVignette: { value: 0.85 },
+        uBright: { value: 0.10 }
+      },
+      vertexShader: vtx,
+      fragmentShader: fsh,
+      depthWrite: false,
+      depthTest: false,
+      side: THREE.BackSide
+    });
+    const sphere = new THREE.SphereGeometry(50, 64, 64);
+    this.iblMesh = new THREE.Mesh(sphere, this.iblMaterial);
+    this.iblMesh.frustumCulled = false;
+    this.iblScene.add(this.iblMesh);
+  }
+
   private executeRenderPipeline(): void {
-    // 阶段1：环境生成
+    // 阶段1：环境生成 + 单次PMREM
     this.generateEnvironment();
 
-    // 阶段2：PMREM预计算
-    this.generatePMREM();
-
-    // 阶段3：PBR主渲染
+    // 阶段2：PBR主渲染
     this.renderScene();
 
-    // 阶段4：后处理
+    // 阶段3：后处理
     this.applyPostProcessing();
   }
 
   private generateEnvironment(): void {
-    if (this.environmentMap && this.irradianceMap) {
-      return; // 已经生成
-    }
+    // 统一从 EnvironmentSystem 获取源环境贴图，再执行一次 PMREM
+    const maps = this.environmentSystem.generateEnvironment();
+    this.environmentMap = maps.environmentMap;
 
-    const environmentResult = this.environmentSystem.generateEnvironment();
-    this.environmentMap = environmentResult.environmentMap;
-    this.irradianceMap = environmentResult.irradianceMap;
-
-    // 应用到场景
     if (this.environmentMap) {
-      this.scene.environment = this.environmentMap;
+      const pmrem = this.pmremGenerator.generatePMREM(this.environmentMap);
+      this.irradianceMap = pmrem.irradiance;
+      if (this.irradianceMap) {
+        this.scene.environment = this.irradianceMap;
+      }
     }
   }
 
   private generatePMREM(): void {
-    if (!this.environmentMap) return;
-
-    const pmremResult = this.pmremGenerator.generatePMREM(this.environmentMap);
-    this.irradianceMap = pmremResult.irradiance;
-    
-    // 更新场景环境
-    if (this.irradianceMap) {
-      this.scene.environment = this.irradianceMap;
-    }
+    // 移除重复的 PMREM 执行，逻辑合并到 generateEnvironment()
   }
 
   private renderScene(): void {
@@ -298,7 +389,14 @@ export class Renderer {
     } else {
       // 直接渲染到屏幕
       this.renderer.setRenderTarget(null);
-      this.renderer.render(this.scene, this.camera);
+      if (this.bgScene && this.bgCamera && this.bgMaterial) {
+        const drawSize = new THREE.Vector2();
+        this.renderer.getDrawingBufferSize(drawSize);
+        this.bgMaterial.uniforms.uResolution.value.copy(drawSize);
+        this.bgMaterial.uniforms.uTime.value = performance.now() * 0.000001;
+        this.renderer.render(this.bgScene, this.bgCamera);
+      }
+      // this.renderer.render(this.scene, this.camera);
     }
   }
 
@@ -309,11 +407,20 @@ export class Renderer {
     this.generateEnvironment();
   }
 
+  updateBackgroundSettings(settings: Partial<{ radius: number; smooth: number; noise: number }>): void {
+    if (this.bgMaterial) {
+      if (settings.radius !== undefined) this.bgMaterial.uniforms.uRadius.value = settings.radius;
+      if (settings.smooth !== undefined) this.bgMaterial.uniforms.uSmooth.value = settings.smooth;
+      if (settings.noise !== undefined) this.bgMaterial.uniforms.uNoise.value = settings.noise;
+    }
+    this.updateEnvironmentMaps();
+  }
+
   private updateMaterialIBL(material: THREE.Material): void {
     if (material instanceof THREE.MeshStandardMaterial) {
       if (this.irradianceMap) {
         material.envMap = this.irradianceMap;
-        material.envMapIntensity = 1.0;
+        material.envMapIntensity = this.envIntensity;
         material.needsUpdate = true;
       }
     }
@@ -338,7 +445,7 @@ export class Renderer {
       object.traverse((child) => {
         if (child instanceof THREE.Mesh && child.material) {
           const materialName = child.userData.materialName || 'default';
-          const newMaterialState = materials[materialName];
+          const newMaterialState = materials[materialName] ?? materials['default'];
           
           if (newMaterialState) {
             this.updateMeshMaterial(child, newMaterialState, options);
@@ -367,6 +474,10 @@ export class Renderer {
 
       material.roughness = state.roughness;
       material.metalness = state.metalness;
+
+      if (typeof state.envMapIntensity === 'number') {
+        material.envMapIntensity = state.envMapIntensity;
+      }
 
       if (state.emissive) {
         if (typeof state.emissive === 'string') {

@@ -101,11 +101,64 @@ function setupControls() {
         updateModel();
     });
     
+    document.getElementById('noiseSphere').addEventListener('click', () => {
+        visualizer.updateEnvironment({
+            type: 'noise-sphere',
+            intensity: currentState.envIntensity,
+            sphere: { radius: 0.8, pulse: true }
+        });
+    });
+    
+    document.getElementById('hdrEnv').addEventListener('click', () => {
+        visualizer.updateEnvironment({
+            type: 'hdr',
+            hdr: { url: '', intensity: currentState.envIntensity }
+        });
+    });
+    
+    document.getElementById('procedural').addEventListener('click', () => {
+        visualizer.updateEnvironment({
+            type: 'procedural',
+            intensity: currentState.envIntensity,
+            procedural: {
+                resolution: 512,
+                gradient: {
+                    stops: [
+                        { position: 0, color: '#87CEEB' },
+                        { position: 0.5, color: '#98FB98' },
+                        { position: 1, color: '#FFB6C1' }
+                    ]
+                }
+            }
+        });
+    });
+    
     // 环境强度
     document.getElementById('envIntensity').addEventListener('input', (e) => {
         currentState.envIntensity = parseFloat(e.target.value);
         document.getElementById('envIntensityValue').textContent = currentState.envIntensity.toFixed(1);
         updateEnvironment();
+    });
+
+    document.getElementById('bgRadius').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        document.getElementById('bgRadiusValue').textContent = val.toFixed(2);
+        visualizer.updateBackground({ radius: val });
+    });
+    document.getElementById('bgSmooth').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        document.getElementById('bgSmoothValue').textContent = val.toFixed(2);
+        visualizer.updateBackground({ smooth: val });
+    });
+    document.getElementById('bgVignette').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        document.getElementById('bgVignetteValue').textContent = val.toFixed(2);
+        visualizer.updateBackground({ vignette: val });
+    });
+    document.getElementById('bgBright').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        document.getElementById('bgBrightValue').textContent = val.toFixed(2);
+        visualizer.updateBackground({ bright: val });
     });
     
     // 按钮事件
@@ -172,6 +225,7 @@ async function updateModel() {
 function updateEnvironment() {
     visualizer.updateEnvironment({
         type: 'noise-sphere',
+        intensity: currentState.envIntensity,
         sphere: { radius: 0.8, pulse: true }
     });
 }
