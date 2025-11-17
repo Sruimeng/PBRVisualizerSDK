@@ -174,6 +174,10 @@ export class Renderer {
     this.postProcessor.dispose();
   }
 
+  addModel(object: THREE.Object3D): void {
+    this.scene.add(object);
+  }
+
   private initializeScene(): void {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x0f0c29);

@@ -182,7 +182,9 @@ function showError(message: string | null) {
     errorDiv.textContent = message;
     document.querySelector('.controls-panel').appendChild(errorDiv);
     
-    setTimeout(() => {
-        errorDiv.remove();
-    }, 5000);
+  setTimeout(() => {
+    errorDiv.remove();
+  }, 5000);
 }
+
+initVisualizer();

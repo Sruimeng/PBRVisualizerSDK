@@ -1,5 +1,32 @@
 import * as THREE from 'three';
-import { EventEmitter } from 'events';
+type Handler = (...args: any[]) => void;
+class BaseEmitter {
+  private listeners: Map<string, Set<Handler>> = new Map();
+  on(event: string, handler: Handler): void {
+    let set = this.listeners.get(event);
+    if (!set) {
+      set = new Set();
+      this.listeners.set(event, set);
+    }
+    set.add(handler);
+  }
+  off(event: string, handler: Handler): void {
+    const set = this.listeners.get(event);
+    if (set) {
+      set.delete(handler);
+      if (set.size === 0) this.listeners.delete(event);
+    }
+  }
+  emit(event: string, ...args: any[]): void {
+    const set = this.listeners.get(event);
+    if (set) {
+      for (const fn of Array.from(set)) fn(...args);
+    }
+  }
+  removeAllListeners(): void {
+    this.listeners.clear();
+  }
+}
 import { 
   VisualizerOptions, 
   SceneState, 
@@ -19,7 +46,7 @@ import { ModelManager } from './ModelManager';
 import { EnvironmentSystem } from './EnvironmentSystem';
 import { QualityDetector } from './QualityDetector';
 
-export class PBRVisualizer extends EventEmitter {
+export class PBRVisualizer extends BaseEmitter {
   private container: HTMLElement;
   private renderer: Renderer;
   private stateMachine: StateMachine;
@@ -304,6 +331,10 @@ export class PBRVisualizer extends EventEmitter {
     for (const model of models) {
       try {
         await this.modelManager.loadModel(model.id, model.source);
+        const object = this.modelManager.getModel(model.id);
+        if (object) {
+          this.renderer.addModel(object);
+        }
         
         if (model.initialState) {
           await this.updateModel(model.id, model.initialState);
@@ -340,6 +371,7 @@ export class PBRVisualizer extends EventEmitter {
       const deltaTime = currentTime - lastTime;
       
       frameCount++;
+      this.renderer.render();
       
       if (deltaTime >= 1000) {
         this.stats.fps = Math.round((frameCount * 1000) / deltaTime);

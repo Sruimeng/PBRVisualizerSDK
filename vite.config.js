@@ -65,7 +65,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'demo/index.html'),
-          single: resolve(__dirname, 'demo/html/single.html'),
+          demo: resolve(__dirname, 'demo/html/pbr-demo.html'),
         },
       },
       minify: false, // iOS 9 等低版本加载压缩代码报脚本异常
@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@sruimeng/mesh-flow': resolve(__dirname, 'src/index.ts'),
+        '@sruim/pbr-visualizer-sdk': resolve(__dirname, 'src/index.ts'),
       },
     },
     plugins: [
