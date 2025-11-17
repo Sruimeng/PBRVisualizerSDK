@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@types/three':
-        specifier: ^0.177.0
-        version: 0.177.0
+      postprocessing:
+        specifier: ^6.33.4
+        version: 6.38.0(three@0.177.0)
       three:
         specifier: ^0.177.0
         version: 0.177.0
@@ -45,6 +45,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.1.2
         version: 19.1.2(@types/react@19.1.2)
+      '@types/three':
+        specifier: ^0.177.0
+        version: 0.177.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.10.0
         version: 7.13.0(@typescript-eslint/parser@7.13.0(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0)(typescript@5.4.5)
@@ -2580,6 +2583,11 @@ packages:
   postcss@8.4.38:
     resolution: {integrity: sha512-Wglpdk03BSfXkHoQa3b/oulrotAkwrlLDRSOb9D0bN86FdRyE9lppSp33aHNPgBa0JKCoB+drFLZkQoRRYae5A==}
     engines: {node: ^10 || ^12 || >=14}
+
+  postprocessing@6.38.0:
+    resolution: {integrity: sha512-tisx8XN/PWTL3uXz2mt8bjlMS1wiOUSCK3ixi4zjwUCFmP8XW8hNhXwrxwd2zf2VmCyCQ3GUaLm7GLnkkBbDsQ==}
+    peerDependencies:
+      three: '>= 0.157.0 < 0.182.0'
 
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
@@ -5983,6 +5991,10 @@ snapshots:
       nanoid: 3.3.7
       picocolors: 1.0.1
       source-map-js: 1.2.0
+
+  postprocessing@6.38.0(three@0.177.0):
+    dependencies:
+      three: 0.177.0
 
   prelude-ls@1.2.1: {}
 

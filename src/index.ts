@@ -1,3 +1,9 @@
 export * from './types';
-export { convertModel as convert } from './core/pipeline';
-export { createAssimp } from './core/assimp';
+export { PBRVisualizer } from './core';
+export { StateMachine } from './core';
+export { Renderer } from './core';
+export { EnvironmentSystem } from './core';
+export { ModelManager } from './core';
+export { PMREMGenerator } from './core';
+export { PostProcessor } from './core';
+export { QualityDetector } from './core';
