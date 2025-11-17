@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Model Convert</title>
+  <style>
+    html, body { margin: 0; padding: 0; }
+    body { background: #000; color: #fafafa; font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .page { min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar { width: 100%; display: flex; justify-content: center; padding: 16px 24px; box-sizing: border-box; }
+    .topbar .nav { display: flex; align-items: center; gap: 8px; color: #bdbdbd; font-weight: 500; }
+    .topbar .nav .sep { color: #555; }
+
+    .hero { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 48px 24px; text-align: center; }
+    .hero-title { max-width: 1044px; font-size: 56px; font-weight: 600; line-height: 1.14; background: linear-gradient(90deg, rgba(255,255,255,1) 46%, rgba(255,255,255,0.2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero-desc { max-width: 992px; font-size: 16px; line-height: 1.5; color: #ccc; }
+
+    .panel { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .upload-card { width: 412px; height: 184px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); box-shadow: 0 8px 24px rgba(0,0,0,0.4) inset; display: flex; align-items: center; justify-content: center; }
+    .upload-inner { display: flex; align-items: center; gap: 12px; }
+    .upload-texts { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .upload-title { font-size: 14px; color: #e0e0e0; }
+    .upload-sub { font-size: 12px; color: #9e9e9e; }
+    .upload-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    .upload-trigger { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); color: #fafafa; cursor: pointer; background: transparent; }
+
+    .format-select { position: relative; display: inline-flex; align-items: center; height: 44px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #fafafa; }
+    .format-select.is-open { background: rgba(255,255,255,0.16); }
+    .format-select.is-disabled { opacity: .5; pointer-events: none; }
+    .format-button { display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; height: 44px; color: inherit; background: transparent; border: none; cursor: pointer; }
+    .format-button:focus-visible { outline: 2px solid rgba(255,255,255,0.3); outline-offset: 2px; border-radius: 8px; }
+    .format-caret { width: 16px; height: 16px; fill: #fafafa; transition: transform .2s ease; }
+    .format-select.is-open .format-caret { transform: rotate(180deg); }
+    .format-panel { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); padding: 6px 0; display: none; }
+    .format-select.is-open .format-panel { display: block; }
+    .format-option { height: 36px; display: flex; align-items: center; padding: 0 12px; cursor: pointer; font-size: 14px; }
+    .format-option:hover { background: rgba(255,255,255,0.12); }
+    .format-option[aria-selected="true"] { font-weight: 600; }
+    @media (max-width: 480px) { .format-button { padding: 0 12px; } }
+
+    .convert-btn { padding: 14px 28px; border-radius: 100px; background: #fafafa; color: #000; font-weight: 600; border: none; cursor: pointer; }
+    .convert-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+    .output { margin-top: 12px; color: #fafafa; }
+
+    .status { margin-top: 8px; min-height: 20px; font-size: 13px; }
+    .status--loading { color: #bdbdbd; display: inline-flex; align-items: center; gap: 8px; }
+    .status--success { color: #e0e0e0; }
+    .status--error { color: #ff6b6b; }
+    .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); border-top-color: #e0e0e0; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="page" id="J-page">
+  <div class="topbar">
+    <div class="nav">
+      <span>3D Model Convert</span>
+    </div>
+  </div>
+  <section class="hero">
+    <h1 class="hero-title">1 Click Convert 2D Image or 3D File to Any 3D Format Ready to Go</h1>
+    <p class="hero-desc">Upload your design in any 2D image or 3D format file, by 1 click, 3D converter automatically detects source format and convert to popular 3D format ready to go: further editing in most 3D modeling software, 3D printing, game development, AR/VR and all 3D scenarios, usability guaranteed.</p>
+    <div class="panel">
+      <div class="upload-card" id="J-dropzone">
+        <div class="upload-inner">
+          <button class="upload-trigger" id="J-browse">Cloud Upload</button>
+          <div class="upload-texts">
+            <div class="upload-title">Drag, Upload or Paste 3D file</div>
+            <div class="upload-sub">Max file size: 200MB</div>
+          </div>
+        </div>
+        <input class="upload-input" id="J-file" type="file" accept=".fbx,.obj,.stl,.ply,.gltf,.glb,.usd,.usdz,.usda,.usdc" />
+      </div>
+      <div class="status" id="J-status" role="status" aria-live="polite"></div>
+      <div class="format-select" id="J-format-combobox" role="combobox" aria-expanded="false" aria-controls="J-format-list" aria-haspopup="listbox">
+        <button class="format-button" id="J-format-button" type="button" aria-labelledby="J-format-label">
+          <span id="J-format-label">Select Target Format</span>
+          <span id="J-format-value">GLB</span>
+          <svg class="format-caret" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <div class="format-panel" id="J-format-list" role="listbox">
+          <div class="format-option" role="option" data-value="glb" aria-selected="true">GLB</div>
+          <div class="format-option" role="option" data-value="obj">OBJ</div>
+          <div class="format-option" role="option" data-value="stl">STL</div>
+          <div class="format-option" role="option" data-value="ply">PLY</div>
+          <div class="format-option" role="option" data-value="fbx">FBX</div>
+          <div class="format-option" role="option" data-value="usd">USDZ</div>
+        </div>
+        <select id="J-format-native" hidden>
+          <option value="glb" selected>glb</option>
+          <option value="obj">obj</option>
+          <option value="stl">stl</option>
+          <option value="ply">ply</option>
+          <option value="fbx">fbx</option>
+          <option value="usd">usd</option>
+        </select>
+      </div>
+      <button class="convert-btn" id="J-convert">Convert Now</button>
+      <div class="output" id="J-output"></div>
+    </div>
+  </section>
+ </div>
+
+<script type="module" src="../src/single.ts"></script>
+</body>
+</html>
