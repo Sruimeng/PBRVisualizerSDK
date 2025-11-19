@@ -13,6 +13,7 @@ import { EnvironmentSystem } from './EnvironmentSystem';
 import { PMREMGenerator } from './PMREMGenerator';
 import { PostProcessor } from './PostProcessor';
 import { createNoiseSphereMaterial } from '../shaders/DynamicNoiseSphere';
+import { createSGBMaterial, getSamplesForRoughness, roughnessToMip } from '../shaders/SphericalGaussianBlur';
 
 export interface RendererOptions {
   container: HTMLElement;
@@ -43,6 +44,11 @@ export class Renderer {
   private environmentMap: THREE.Texture | null = null;
   private irradianceMap: THREE.Texture | null = null;
   private envIntensity: number = 1.0;
+  private useCustomPMREM: boolean = false;
+  private sgbScene: THREE.Scene | null = null;
+  private sgbMaterial: THREE.RawShaderMaterial | null = null;
+  private sgbCubeCamera: THREE.CubeCamera | null = null;
+  private sgbSphere: THREE.Mesh | null = null;
   private bgScene: THREE.Scene | null = null;
   private bgCamera: THREE.OrthographicCamera | null = null;
   private bgMaterial: THREE.RawShaderMaterial | null = null;
@@ -109,6 +115,7 @@ export class Renderer {
   updateEnvironment(config: EnvironmentConfig): void {
     this.environmentSystem.updateEnvironment(config);
     this.envIntensity = config.intensity ?? (config.hdr?.intensity ?? 1.0);
+    this.useCustomPMREM = !!config.useCustomPMREM;
     this.updateEnvironmentMaps();
   }
 
@@ -263,7 +270,7 @@ export class Renderer {
     const plane = new THREE.PlaneGeometry(2, 2);
     this.bgMesh = new THREE.Mesh(plane, this.bgMaterial);
     this.bgMesh.frustumCulled = false;
-    this.scene.add(this.bgMesh);
+    this.bgScene.add(this.bgMesh);
   }
 
   private initializeIBLSphere(): void {
@@ -348,10 +355,65 @@ void main(){
   }
 
   private generateEnvironment(): void {
-    // 统一从 EnvironmentSystem 获取源环境贴图，再执行一次 PMREM
+    const envType = this.environmentSystem.getCurrentType();
+
+    if (envType === 'noise-sphere' && this.bgScene && this.bgMaterial && this.bgCamera) {
+      const drawSize = new THREE.Vector2();
+      this.renderer.getDrawingBufferSize(drawSize);
+      this.bgMaterial.uniforms.uResolution.value.copy(drawSize);
+      this.bgMaterial.uniforms.uTime.value = performance.now() * 0.001;
+
+      if (this.useCustomPMREM) {
+        const bgRT = new THREE.WebGLRenderTarget(drawSize.x, drawSize.y, {
+          minFilter: THREE.LinearFilter,
+          magFilter: THREE.LinearFilter,
+          format: THREE.RGBAFormat,
+          type: THREE.HalfFloatType
+        });
+        this.renderer.setRenderTarget(bgRT);
+        this.renderer.render(this.bgScene, this.bgCamera);
+        this.renderer.setRenderTarget(null);
+
+        if (!this.sgbScene) this.sgbScene = new THREE.Scene();
+        if (!this.sgbMaterial) {
+          this.sgbMaterial = createSGBMaterial(bgRT.texture, {
+            samples: getSamplesForRoughness(0.5),
+            latitudinal: true,
+            dTheta: 0.02,
+            mipInt: roughnessToMip(0.5),
+            poleAxis: new THREE.Vector3(0, 1, 0)
+          });
+        } else {
+          (this.sgbMaterial.uniforms as any).envMap.value = bgRT.texture;
+        }
+        if (!this.sgbSphere) {
+          this.sgbSphere = new THREE.Mesh(new THREE.SphereGeometry(50, 64, 64), this.sgbMaterial);
+          this.sgbSphere.frustumCulled = false;
+          this.sgbScene.add(this.sgbSphere);
+        }
+        if (!this.sgbCubeCamera) {
+          const size = Math.max(256, Math.floor(512 * this.quality.resolution));
+          const cubeRT = new THREE.WebGLCubeRenderTarget(size, { format: THREE.RGBAFormat, type: THREE.HalfFloatType });
+          this.sgbCubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRT);
+        }
+        this.sgbCubeCamera.update(this.renderer, this.sgbScene);
+        this.environmentMap = this.sgbCubeCamera.renderTarget.texture as unknown as THREE.Texture;
+        this.irradianceMap = this.environmentMap;
+        this.scene.environment = this.irradianceMap as THREE.Texture;
+        return;
+      } else {
+        const pmremFromScene = this.pmremGenerator.generateFromScene(this.bgScene);
+        this.environmentMap = pmremFromScene.envMap;
+        this.irradianceMap = pmremFromScene.irradiance;
+        if (this.irradianceMap) {
+          this.scene.environment = this.irradianceMap;
+        }
+        return;
+      }
+    }
+
     const maps = this.environmentSystem.generateEnvironment();
     this.environmentMap = maps.environmentMap;
-
     if (this.environmentMap) {
       const pmrem = this.pmremGenerator.generatePMREM(this.environmentMap);
       this.irradianceMap = pmrem.irradiance;
@@ -393,10 +455,10 @@ void main(){
         const drawSize = new THREE.Vector2();
         this.renderer.getDrawingBufferSize(drawSize);
         this.bgMaterial.uniforms.uResolution.value.copy(drawSize);
-        this.bgMaterial.uniforms.uTime.value = performance.now() * 0.000001;
+        this.bgMaterial.uniforms.uTime.value = performance.now() * 0.001;
         this.renderer.render(this.bgScene, this.bgCamera);
       }
-      // this.renderer.render(this.scene, this.camera);
+      this.renderer.render(this.scene, this.camera);
     }
   }
 

@@ -51,7 +51,17 @@ export class ModelManager {
 
       return object;
     } catch (error) {
-      throw new Error(`Failed to load model ${modelId}: ${error}`);
+      console.warn(`Failed to load model ${modelId}: ${error}. Using placeholder primitive.`);
+      const placeholder = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 64, 64),
+        new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.5, metalness: 0.2 })
+      );
+      placeholder.name = modelId;
+      this.setupModel(placeholder);
+      const stats = this.calculateModelStats(placeholder);
+      this.modelStats.set(modelId, stats);
+      this.loadedModels.set(modelId, placeholder);
+      return placeholder;
     }
   }
 

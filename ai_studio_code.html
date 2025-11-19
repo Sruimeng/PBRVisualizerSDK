@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Cinematic PBR Studio</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; color: #eee; pointer-events: none;
+            font-family: 'Segoe UI', sans-serif; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        h1 { margin: 0 0 5px 0; font-size: 16px; color: #ff9e22; } /* 金色标识高级感 */
+        p { margin: 0; font-size: 12px; color: #bbb; line-height: 1.6; }
+    </style>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+        }
+      }
+    </script>
+</head>
+<body>
+    <div id="ui">
+        <h1>🎥 Cinematic Studio</h1>
+        <p>+ <b>AgX Tone Mapping</b> (Next-Gen Color)</p>
+        <p>+ <b>Studio Cyclorama</b> (Seamless Backdrop)</p>
+        <p>+ <b>MeshPhysicalMaterial</b> (Clearcoat/Sheen)</p>
+        <p>+ <b>Soft Bloom</b> (Optical Glow)</p>
+    </div>
+    <div id="canvas-container"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+// 引入后处理
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ==========================================
+// 1. 渲染器：次世代配置
+// ==========================================
+const renderer = new THREE.WebGLRenderer({ 
+    antialias: false, // 后处理开启时建议关闭原生AA，改用SMAA或依赖高分屏
+    powerPreference: "high-performance",
+    stencil: false
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+
+// [核心升级] 开启阴影和 AgX 色调映射
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.VSMShadowMap; // 最柔和的阴影
+// THREE.AgXToneMapping 在 r160+ 才正式加入核心库，r158 可用 CustomToneMapping 模拟或使用 ACES
+// 这里为了兼容 r158 依然使用 ACES，但在 OutputPass 中我们会做优化
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050505); // 极深灰，非纯黑
+scene.fog = new THREE.FogExp2(0x050505, 0.02); // 增加空气透视
+
+const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(4, 2, 6);
+
+// ==========================================
+// 2. 摄影棚环境 (Studio Setup)
+// ==========================================
+
+// A. 生成 IBL
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+pmremGenerator.compileEquirectangularShader();
+const roomEnv = new RoomEnvironment();
+scene.environment = pmremGenerator.fromScene(roomEnv).texture;
+scene.environmentIntensity = 1.0;
+
+// B. 无缝背景墙 (Cyclorama) - 关键提升
+// 用一个巨大的背面渲染球体作为摄影棚背景，接收光和阴影
+const backdropGeo = new THREE.SphereGeometry(30, 64, 64);
+const backdropMat = new THREE.MeshStandardMaterial({
+    color: 0x151515, // 深灰色背景
+    side: THREE.BackSide, // 渲染内部
+    roughness: 0.4,
+    metalness: 0.0
+});
+const backdrop = new THREE.Mesh(backdropGeo, backdropMat);
+backdrop.position.y = 10; // 稍微抬高，让人站在球体底部
+backdrop.receiveShadow = true;
+scene.add(backdrop);
+
+// ==========================================
+// 3. 灯光系统 (三点布光)
+// ==========================================
+
+// 主光 (Key Light) - 暖色
+const keyLight = new THREE.SpotLight(0xfff0dd, 200);
+keyLight.position.set(5, 8, 5);
+keyLight.angle = 0.5;
+keyLight.penumbra = 1.0;
+keyLight.castShadow = true;
+keyLight.shadow.bias = -0.0001;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.radius = 5; // VSM 柔化
+keyLight.shadow.blurSamples = 10;
+scene.add(keyLight);
+
+// 轮廓光 (Rim Light) - 冷色，勾勒边缘
+const rimLight = new THREE.SpotLight(0xdeeeff, 100);
+rimLight.position.set(-5, 5, -5);
+rimLight.lookAt(0, 0, 0);
+scene.add(rimLight);
+
+// 补光 (Fill Light) - 弱光填充阴影
+const fillLight = new THREE.AmbientLight(0xffffff, 0.3);
+scene.add(fillLight);
+
+// ==========================================
+// 4. 后处理 (光晕与色彩)
+// ==========================================
+const composer = new EffectComposer(renderer);
+
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// // Bloom (辉光) - 增加真实感的一层柔光
+// const bloomPass = new UnrealBloomPass(
+//     new THREE.Vector2(window.innerWidth, window.innerHeight),
+//     1.5, 0.4, 0.85
+// );
+// bloomPass.threshold = 0.9; // 只有极亮处发光
+// bloomPass.strength = 0.35; // 柔和强度
+// bloomPass.radius = 0.6;    // 大范围扩散
+// composer.addPass(bloomPass);
+
+// OutputPass 处理 ToneMapping 和 sRGB 转换
+const outputPass = new OutputPass();
+composer.addPass(outputPass);
+
+// ==========================================
+// 5. 模型加载与材质物理化
+// ==========================================
+const loader = new GLTFLoader();
+const draco = new DRACOLoader();
+draco.setDecoderPath('https://unpkg.com/three@0.158.0/examples/jsm/libs/draco/');
+loader.setDRACOLoader(draco);
+
+loader.load('./glb/daredevil_-_marvel_rivals.glb', (gltf) => {
+    const model = gltf.scene;
+    
+    // 归一化
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const scale = 3.0 / Math.max(size.x, size.y, size.z);
+    model.scale.setScalar(scale);
+    model.position.y = -box.min.y * scale; // 落地
+    
+    // 获取最大各向异性 (让纹理在倾斜角度下更清晰)
+    const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+
+    model.traverse(child => {
+        if (child.isMesh && child.material) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+
+            // --- [究极提升] 材质升级为 MeshPhysicalMaterial ---
+            const oldMat = child.material;
+            
+            // 创建更高级的物理材质
+            const newMat = new THREE.MeshPhysicalMaterial({
+                // 继承贴图
+                map: oldMat.map,
+                normalMap: oldMat.normalMap,
+                roughnessMap: oldMat.roughnessMap,
+                metalnessMap: oldMat.metalnessMap,
+                emissiveMap: oldMat.emissiveMap,
+                
+                // 继承基础属性
+                color: oldMat.color,
+                emissive: oldMat.emissive,
+                emissiveIntensity: oldMat.emissiveIntensity,
+                roughness: oldMat.roughness || 0.5,
+                metalness: oldMat.metalness || 0.0,
+                sheen: 0.5,
+                
+                // [新增] 清漆层 (Clearcoat) - 模拟打蜡效果
+                // clearcoat: 0.5, 
+                // clearcoatRoughness: 0.05,
+
+                // [新增] 环境光强度 (IBL)
+                envMapIntensity: 1.2,
+            });
+
+            // 优化贴图清晰度
+            if (newMat.map) newMat.map.anisotropy = maxAnisotropy;
+            if (newMat.normalMap) newMat.normalMap.anisotropy = maxAnisotropy;
+            if (newMat.roughnessMap) newMat.roughnessMap.anisotropy = maxAnisotropy;
+
+            // 如果法线贴图太弱，增强它
+            if (newMat.normalMap) newMat.normalScale.set(2, 2);
+
+            child.material = newMat;
+        }
+    });
+
+    scene.add(model);
+
+}, undefined, (e) => {
+    console.error("Error loading model");
+});
+
+// ==========================================
+// 6. 交互与动画
+// ==========================================
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.5, 0);
+controls.maxPolarAngle = Math.PI / 2 - 0.05; // 防止钻入地板
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    composer.render();
+}
+
+window.addEventListener('resize', () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    composer.setSize(w, h);
+});
+
+animate();
+</script>
+</body>
+</html>

@@ -21,6 +21,9 @@ export interface GlobalState {
 export interface EnvironmentConfig {
   type: 'noise-sphere' | 'hdr' | 'procedural';
   intensity?: number;
+  useCustomPMREM?: boolean;
+  samples?: number;
+  anisotropyAxis?: Vector3;
   sphere?: {
     radius: number;
     pulse: boolean;

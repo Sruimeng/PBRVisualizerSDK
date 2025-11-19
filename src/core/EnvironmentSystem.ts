@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CubeCamera, WebGLCubeRenderTarget } from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { QualityConfig, EnvironmentConfig } from '../types/core';
+import { createEquirectToCubeMaterial } from '../shaders/EquirectToCubeUV';
 
 export class EnvironmentSystem {
   private quality: QualityConfig;
@@ -39,6 +40,10 @@ export class EnvironmentSystem {
         this.createProceduralEnvironment(config.procedural);
         break;
     }
+  }
+
+  getCurrentType(): EnvironmentConfig['type'] {
+    return this.currentConfig.type;
   }
 
   generateEnvironment(): { environmentMap: THREE.Texture; irradianceMap: THREE.Texture } {
@@ -167,7 +172,17 @@ export class EnvironmentSystem {
       texture.mapping = THREE.EquirectangularReflectionMapping;
       const size = Math.max(256, Math.floor(512 * this.quality.resolution));
       const cubeRT = new WebGLCubeRenderTarget(size, { format: THREE.RGBAFormat, type: THREE.HalfFloatType });
-      cubeRT.fromEquirectangularTexture(this.renderer, texture);
+      const cubeCam = new CubeCamera(0.1, 1000, cubeRT);
+
+      const scene = new THREE.Scene();
+      const material = createEquirectToCubeMaterial(texture);
+      material.uniforms.uCamPos.value.set(0, 0, 0);
+      const sphere = new THREE.SphereGeometry(50, 64, 64);
+      const mesh = new THREE.Mesh(sphere, material);
+      mesh.frustumCulled = false;
+      scene.add(mesh);
+
+      cubeCam.update(this.renderer, scene);
       this.hdrCubeRT = cubeRT;
       texture.dispose();
     });

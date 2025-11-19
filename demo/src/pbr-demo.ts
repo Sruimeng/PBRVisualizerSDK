@@ -7,6 +7,7 @@ let currentState = {
     metalness: 0.9,
     envIntensity: 1.0
 };
+let useCustomPMREM = false;
 
 // 初始化可视化器
 async function initVisualizer() {
@@ -132,6 +133,12 @@ function setupControls() {
             }
         });
     });
+
+    document.getElementById('pmremToggle').addEventListener('click', () => {
+        useCustomPMREM = !useCustomPMREM;
+        document.getElementById('pmremToggle').textContent = `高精PMREM: ${useCustomPMREM ? '开启' : '关闭'}`;
+        applyPMREMMode();
+    });
     
     // 环境强度
     document.getElementById('envIntensity').addEventListener('input', (e) => {
@@ -226,8 +233,21 @@ function updateEnvironment() {
     visualizer.updateEnvironment({
         type: 'noise-sphere',
         intensity: currentState.envIntensity,
-        sphere: { radius: 0.8, pulse: true }
-    });
+        sphere: { radius: 0.8, pulse: true },
+        useCustomPMREM: useCustomPMREM
+    } as any);
+}
+
+function applyPMREMMode() {
+    // 重新应用当前环境类型，带上 PMREM 开关
+    const activeEnvBtn = document.querySelector('.button-group .btn.active') as HTMLElement | null;
+    // 简化：直接用当前“噪波球体”环境刷新
+    visualizer.updateEnvironment({
+        type: 'noise-sphere',
+        intensity: currentState.envIntensity,
+        sphere: { radius: 0.8, pulse: true },
+        useCustomPMREM: useCustomPMREM
+    } as any);
 }
 
 function showError(message: string | null) {
