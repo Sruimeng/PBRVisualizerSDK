@@ -5,16 +5,16 @@ export interface GlobalState {
   // 环境贴图配置
   environment: EnvironmentConfig;
   // 场景显示设置；默认值：exposure 1.0，gamma 2.2，toneMapping ACES
-  sceneSettings?: {
+  sceneSettings: {
+    // 场景背景颜色；默认值：(0,0,0)
+    background: Color;
     // 曝光；默认值：1.0
-    exposure: number;
+    exposure?: number;
     // 伽马校正；默认值：2.2
-    gamma: number;
+    gamma?: number;
     // 色调映射类型；默认值：ACESFilmicToneMapping
-    toneMapping: ToneMapping;
+    toneMapping?: ToneMapping;
   };
-  // 额外灯光数组；默认值：[]
-  light?: LightState[];
   // 相机参数
   camera?: CameraState;
   // 后处理参数
@@ -23,6 +23,8 @@ export interface GlobalState {
 
 // 灯光状态：单盏灯的启用与参数（颜色、强度、位置）
 export interface LightState {
+  // 灯光类型；默认值：rectAreaLight
+  type: 'rectAreaLight' | 'pointLight' | 'spotLight' | 'directionalLight';
   // 是否启用此灯光；默认值：true
   enabled: boolean;
   // 灯光颜色
@@ -31,6 +33,8 @@ export interface LightState {
   intensity: number;
   // 灯光位置
   position: Vector3;
+  // 矩形区域灯光大小；默认值：(1,1)
+  size?: [number, number];
 }
 
 // 环境配置：用于设置 IBL 环境强度与贴图 URL
@@ -160,6 +164,8 @@ export interface AnimationState {
 export interface ModelState {
   // 动画参数
   animations: AnimationState[];
+  // 灯光参数；默认值：[]
+  light?: LightState[];
   // 材质参数
   material?: MaterialState;
   // 模型是否可见；默认值：true

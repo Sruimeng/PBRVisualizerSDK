@@ -5,3 +5,5 @@ export * from './ModelManager';
 export * from './PMREMGenerator';
 export * from './PostProcessor';
 export * from './QualityDetector';
+export * from './LightManager';
+export * from './Emitter';
