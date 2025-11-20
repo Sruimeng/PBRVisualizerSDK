@@ -1,8 +1,2 @@
 export * from './types';
-export { PBRVisualizer } from './core';
-export { StateMachine } from './core';
-export { Renderer } from './core';
-export { ModelManager } from './core';
-export { PMREMGenerator } from './core';
-export { PostProcessor } from './core';
-export { QualityDetector } from './core';
+export * from './core';
