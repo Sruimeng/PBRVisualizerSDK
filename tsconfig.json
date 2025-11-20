@@ -25,7 +25,8 @@
     "noEmit": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@sruim/pbr-visualizer-sdk": ["src/index.ts"]
     }
   },
   "include": [

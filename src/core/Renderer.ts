@@ -9,11 +9,18 @@ import {
   PostProcessState,
   CameraState
 } from '../types/core';
+import { RectAreaLight } from 'three';
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import { EnvironmentSystem } from './EnvironmentSystem';
 import { PMREMGenerator } from './PMREMGenerator';
 import { PostProcessor } from './PostProcessor';
+import { ShadowSystem } from './ShadowSystem';
 import { createNoiseSphereMaterial } from '../shaders/DynamicNoiseSphere';
 import { createSGBMaterial, getSamplesForRoughness, roughnessToMip } from '../shaders/SphericalGaussianBlur';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 export interface RendererOptions {
   container: HTMLElement;
@@ -37,6 +44,7 @@ export class Renderer {
   private environmentSystem: EnvironmentSystem;
   private pmremGenerator: PMREMGenerator;
   private postProcessor: PostProcessor;
+  private shadowSystem: ShadowSystem;
   private quality: QualityConfig;
   private debug: boolean;
   private renderTarget: THREE.WebGLRenderTarget;
@@ -56,6 +64,9 @@ export class Renderer {
   private iblScene: THREE.Scene | null = null;
   private iblMaterial: THREE.RawShaderMaterial | null = null;
   private iblMesh: THREE.Mesh | null = null;
+  private activeModelId: string | null = null;
+  private modelBaseY: number = 0;
+  private sceneStudioLights: RectAreaLight[] = [];
 
   constructor(options: RendererOptions) {
     this.container = options.container;
@@ -66,8 +77,8 @@ export class Renderer {
     this.initializeCamera();
     this.initializeRenderer();
     this.initializeSystems();
-    this.setupPipeline();
     this.initializeBackground();
+    this.setupPipeline();
     this.initializeIBLSphere();
   }
 
@@ -97,6 +108,39 @@ export class Renderer {
     if (state.animations) {
       this.applyAnimations(object, state.animations);
     }
+
+    // 如果是当前激活的模型，更新阴影系统
+    if (this.activeModelId === modelId) {
+        // 重新计算包围盒以获取正确的落地高度
+        const box = new THREE.Box3().setFromObject(object);
+        const size = box.getSize(new THREE.Vector3());
+        // 假设模型缩放已经应用
+        // 这里可能需要更复杂的逻辑来确定 modelBaseY，暂时简化
+        // 在 ai_studio_code.html 中，modelBaseY 是在加载时计算的
+    }
+  }
+
+  setShadowTarget(modelId: string): void {
+    const object = this.scene.getObjectByName(modelId);
+    if (object) {
+        this.activeModelId = modelId;
+        const box = new THREE.Box3().setFromObject(object);
+        // 计算落地位置 (假设模型原点在中心或底部，这里参考 ai_studio_code.html 的逻辑)
+        // ai_studio_code.html: modelBaseY = -box.min.y * scale;
+        // 这里我们假设 object 已经是缩放后的
+        this.modelBaseY = object.position.y; // 初始高度作为基准？
+        // 或者我们需要计算包围盒的底部
+        this.modelBaseY = box.min.y;
+        
+        // 更新阴影基础大小
+        const size = box.getSize(new THREE.Vector3());
+        const shadowScale = Math.max(size.x, size.z) * 1.5;
+        this.shadowSystem.setBaseScale(shadowScale);
+        this.shadowSystem.setVisible(true);
+    } else {
+        this.activeModelId = null;
+        this.shadowSystem.setVisible(false);
+    }
   }
 
   async batchUpdate(updates: BatchUpdate[], options: TransitionOptions): Promise<void> {
@@ -116,6 +160,30 @@ export class Renderer {
     this.environmentSystem.updateEnvironment(config);
     this.envIntensity = config.intensity ?? (config.hdr?.intensity ?? 1.0);
     this.useCustomPMREM = !!config.useCustomPMREM;
+    if (config.type === 'studio') {
+      RectAreaLightUniformsLib.init();
+      this.clearStudioLights();
+      const key = config.studio?.keyLight || { color: 0xffffff, intensity: 3.0, position: new THREE.Vector3(3, 4, 3) } as any;
+      const rim = config.studio?.rimLight || { color: 0x4c8bf5, intensity: 5.0, position: new THREE.Vector3(-3, 2, -4) } as any;
+      const fill = config.studio?.fillLight || { color: 0xffeedd, intensity: 1.5, position: new THREE.Vector3(-4, 0, 4) } as any;
+      const keyLight = new RectAreaLight(key.color as any, key.intensity, 4, 4);
+      keyLight.position.copy(key.position);
+      keyLight.lookAt(0, 0, 0);
+      this.scene.add(keyLight);
+      this.sceneStudioLights.push(keyLight);
+      const rimLight = new RectAreaLight(rim.color as any, rim.intensity, 3, 3);
+      rimLight.position.copy(rim.position);
+      rimLight.lookAt(0, 1, 0);
+      this.scene.add(rimLight);
+      this.sceneStudioLights.push(rimLight);
+      const fillLight = new RectAreaLight(fill.color as any, fill.intensity, 5, 5);
+      fillLight.position.copy(fill.position);
+      fillLight.lookAt(0, 0, 0);
+      this.scene.add(fillLight);
+      this.sceneStudioLights.push(fillLight);
+    } else {
+      this.clearStudioLights();
+    }
     this.updateEnvironmentMaps();
   }
 
@@ -169,6 +237,7 @@ export class Renderer {
 
   render(): void {
     // 四阶段渲染管线
+    this.updateShadows();
     this.executeRenderPipeline();
   }
 
@@ -191,6 +260,7 @@ export class Renderer {
     this.environmentSystem.dispose();
     this.pmremGenerator.dispose();
     this.postProcessor.dispose();
+    this.shadowSystem.dispose();
   }
 
   addModel(object: THREE.Object3D): void {
@@ -215,8 +285,9 @@ export class Renderer {
     const height = this.container.clientHeight;
 
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: false, // 依赖后处理或高分屏，参考 ai_studio_code.html
       alpha: true,
+      stencil: true,
       powerPreference: 'high-performance'
     });
 
@@ -234,6 +305,7 @@ export class Renderer {
     this.environmentSystem = new EnvironmentSystem(this.quality, this.renderer);
     this.pmremGenerator = new PMREMGenerator(this.renderer);
     this.postProcessor = new PostProcessor(this.renderer, this.camera, this.quality);
+    this.shadowSystem = new ShadowSystem(this.scene);
   }
 
   private setupPipeline(): void {
@@ -249,8 +321,30 @@ export class Renderer {
       }
     );
 
-    // 简化后处理，直接渲染
-    this.composer = null; // 暂时禁用后处理
+    // 初始化后处理
+    this.composer = new EffectComposer(this.renderer, this.renderTarget);
+    if (this.bgScene && this.bgCamera) {
+      const bgPass = new RenderPass(this.bgScene, this.bgCamera);
+      this.composer.addPass(bgPass);
+    }
+    
+    // 1. Render Pass
+    const renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(renderPass);
+
+    // 2. SSAO Pass
+    const width = this.container.clientWidth;
+    const height = this.container.clientHeight;
+    const ssaoPass = new SSAOPass(this.scene, this.camera, width, height);
+    ssaoPass.kernelRadius = 4;
+    ssaoPass.minDistance = 0.005;
+    ssaoPass.maxDistance = 0.1;
+    ssaoPass.enabled = false; // 默认关闭，由 PostProcessor 控制
+    this.composer.addPass(ssaoPass);
+    
+    // 3. Output Pass (ToneMapping)
+    const outputPass = new OutputPass();
+    this.composer.addPass(outputPass);
   }
 
   private initializeBackground(): void {
@@ -581,5 +675,17 @@ void main(){
 
   private updatePostProcessing(): void {
     this.postProcessor.updateQuality(this.quality);
+  }
+  private updateShadows(): void {
+    if (this.activeModelId) {
+        const object = this.scene.getObjectByName(this.activeModelId);
+        if (object) {
+            this.shadowSystem.update(object, this.modelBaseY);
+        }
+    }
+  }
+  private clearStudioLights(): void {
+    this.sceneStudioLights.forEach(l => { this.scene.remove(l); l.dispose(); });
+    this.sceneStudioLights = [];
   }
 }

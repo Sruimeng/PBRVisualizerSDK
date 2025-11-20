@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { CubeCamera, WebGLCubeRenderTarget } from 'three';
+import { CubeCamera, WebGLCubeRenderTarget, RectAreaLight } from 'three';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-import { QualityConfig, EnvironmentConfig } from '../types/core';
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
+import { QualityConfig, EnvironmentConfig, ColorGradient } from '../types/core';
 import { createEquirectToCubeMaterial } from '../shaders/EquirectToCubeUV';
 
 export class EnvironmentSystem {
@@ -13,6 +14,7 @@ export class EnvironmentSystem {
   private pmremRenderTarget: WebGLCubeRenderTarget | null = null;
   private renderer: THREE.WebGLRenderer;
   private hdrCubeRT: WebGLCubeRenderTarget | null = null;
+  private studioLights: RectAreaLight[] = [];
 
   constructor(quality: QualityConfig, renderer: THREE.WebGLRenderer) {
     this.quality = quality;
@@ -24,6 +26,7 @@ export class EnvironmentSystem {
 
     this.environmentScene = new THREE.Scene();
     this.initializeEnvironmentCamera();
+    RectAreaLightUniformsLib.init();
   }
 
   updateEnvironment(config: EnvironmentConfig): void {
@@ -38,6 +41,9 @@ export class EnvironmentSystem {
         break;
       case 'procedural':
         this.createProceduralEnvironment(config.procedural);
+        break;
+      case 'studio':
+        this.createStudioEnvironment(config.studio);
         break;
     }
   }
@@ -73,6 +79,7 @@ export class EnvironmentSystem {
     }
 
     this.environmentScene.clear();
+    this.clearStudioLights();
   }
 
   private initializeEnvironmentCamera(): void {
@@ -240,6 +247,42 @@ export class EnvironmentSystem {
     this.environmentScene.add(skybox);
   }
 
+  private createStudioEnvironment(config?: EnvironmentConfig['studio']): void {
+    this.clearStudioLights();
+
+    // Key Light
+    const keyConfig = config?.keyLight || { color: 0xffffff, intensity: 3.0, position: new THREE.Vector3(3, 4, 3) };
+    const keyLight = new RectAreaLight(keyConfig.color, keyConfig.intensity, 4, 4);
+    keyLight.position.copy(keyConfig.position);
+    keyLight.lookAt(0, 0, 0);
+    this.studioLights.push(keyLight);
+    this.environmentScene.add(keyLight);
+
+    // Rim Light
+    const rimConfig = config?.rimLight || { color: 0x4c8bf5, intensity: 5.0, position: new THREE.Vector3(-3, 2, -4) };
+    const rimLight = new RectAreaLight(rimConfig.color, rimConfig.intensity, 3, 3);
+    rimLight.position.copy(rimConfig.position);
+    rimLight.lookAt(0, 1, 0);
+    this.studioLights.push(rimLight);
+    this.environmentScene.add(rimLight);
+
+    // Fill Light
+    const fillConfig = config?.fillLight || { color: 0xffeedd, intensity: 1.5, position: new THREE.Vector3(-4, 0, 4) };
+    const fillLight = new RectAreaLight(fillConfig.color, fillConfig.intensity, 5, 5);
+    fillLight.position.copy(fillConfig.position);
+    fillLight.lookAt(0, 0, 0);
+    this.studioLights.push(fillLight);
+    this.environmentScene.add(fillLight);
+  }
+
+  private clearStudioLights(): void {
+    this.studioLights.forEach(light => {
+      this.environmentScene.remove(light);
+      light.dispose();
+    });
+    this.studioLights = [];
+  }
+
   private generateNoiseSphereMaps(): { environmentMap: THREE.Texture; irradianceMap: THREE.Texture } {
     if (this.environmentCamera && this.pmremRenderTarget) {
       // 更新时间以驱动动态噪波
@@ -304,7 +347,7 @@ export class EnvironmentSystem {
     };
   }
 
-  private convertGradientStops(gradient: EnvironmentConfig['procedural']['gradient']): number[] {
+  private convertGradientStops(gradient: ColorGradient): number[] {
     const colors: number[] = [];
     
     if (gradient?.stops && gradient.stops.length >= 2) {

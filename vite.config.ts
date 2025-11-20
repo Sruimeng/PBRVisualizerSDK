@@ -10,11 +10,13 @@ export default defineConfig({
       fileName: (format) => `index.${format === 'es' ? 'mjs' : format === 'cjs' ? 'cjs' : 'js'}`
     },
     rollupOptions: {
-      external: ['three', 'postprocessing'],
+      external: ['three', 'postprocessing', 'react', 'react-dom', 'react/jsx-runtime'],
       output: {
         globals: {
           three: 'THREE',
-          postprocessing: 'POSTPROCESSING'
+          postprocessing: 'POSTPROCESSING',
+          react: 'React',
+          'react-dom': 'ReactDOM'
         },
         exports: 'named'
       }
@@ -31,7 +33,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+      '@sruim/pbr-visualizer-sdk': resolve(__dirname, 'src/index.ts')
     }
   },
   optimizeDeps: {

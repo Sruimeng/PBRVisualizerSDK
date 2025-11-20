@@ -29,6 +29,7 @@ class BaseEmitter {
 }
 import { 
   VisualizerOptions, 
+  QualityConfig,
   SceneState, 
   ModelState, 
   BatchUpdate, 
@@ -232,7 +233,16 @@ export class PBRVisualizer extends BaseEmitter {
     }
   }
 
-  setQuality(quality: Partial<SceneState['global']>): void {
+  setShadowTarget(modelId: string): void {
+    try {
+      this.renderer.setShadowTarget(modelId);
+    } catch (error) {
+      this.handleError('render', `Failed to set shadow target: ${error}`);
+      throw error;
+    }
+  }
+
+  setQuality(quality: Partial<QualityConfig>): void {
     try {
       this.renderer.setQuality(quality);
       this.qualityDetector.setCustomQuality(quality);
@@ -262,7 +272,6 @@ export class PBRVisualizer extends BaseEmitter {
 
     this.renderer.dispose();
     this.modelManager.dispose();
-    this.environmentSystem.dispose();
     this.stateMachine.clearHistory();
 
     this.removeAllListeners();

@@ -22,9 +22,9 @@ export class PMREMGenerator {
     }
     let pmremRenderTarget: THREE.WebGLCubeRenderTarget;
     if ((environmentMap as any).isCubeTexture) {
-      pmremRenderTarget = this.pmremGenerator.fromCubemap(environmentMap as unknown as THREE.CubeTexture);
+      pmremRenderTarget = this.pmremGenerator.fromCubemap(environmentMap as unknown as THREE.CubeTexture) as unknown as THREE.WebGLCubeRenderTarget;
     } else {
-      pmremRenderTarget = this.pmremGenerator.fromEquirectangular(environmentMap);
+      pmremRenderTarget = this.pmremGenerator.fromEquirectangular(environmentMap) as unknown as THREE.WebGLCubeRenderTarget;
     }
     this.cachedPMREMs.set(cacheKey, pmremRenderTarget);
     return { envMap: pmremRenderTarget.texture, irradiance: pmremRenderTarget.texture };
@@ -44,7 +44,7 @@ export class PMREMGenerator {
       };
     }
 
-    const pmremRenderTarget = this.pmremGenerator.fromCubemap(cubeMap);
+    const pmremRenderTarget = this.pmremGenerator.fromCubemap(cubeMap) as unknown as THREE.WebGLCubeRenderTarget;
     this.cachedPMREMs.set(cacheKey, pmremRenderTarget);
 
     return {

@@ -19,7 +19,7 @@ export interface GlobalState {
 
 // 环境配置
 export interface EnvironmentConfig {
-  type: 'noise-sphere' | 'hdr' | 'procedural';
+  type: 'noise-sphere' | 'hdr' | 'procedural' | 'studio';
   intensity?: number;
   useCustomPMREM?: boolean;
   samples?: number;
@@ -37,6 +37,11 @@ export interface EnvironmentConfig {
   procedural?: {
     resolution: number;
     gradient: ColorGradient;
+  };
+  studio?: {
+    keyLight?: { color: string | number; intensity: number; position: Vector3 };
+    fillLight?: { color: string | number; intensity: number; position: Vector3 };
+    rimLight?: { color: string | number; intensity: number; position: Vector3 };
   };
 }
 
@@ -59,7 +64,15 @@ export interface PostProcessState {
   enabled: boolean;
   toneMapping: ToneMappingConfig;
   bloom: BloomConfig;
+  ssao: SSAOConfig;
   antialiasing: AntialiasingConfig;
+}
+
+export interface SSAOConfig {
+  enabled: boolean;
+  kernelRadius: number;
+  minDistance: number;
+  maxDistance: number;
 }
 
 export interface ToneMappingConfig {

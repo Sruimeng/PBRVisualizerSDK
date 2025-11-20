@@ -7,3 +7,4 @@ export { ModelManager } from './core';
 export { PMREMGenerator } from './core';
 export { PostProcessor } from './core';
 export { QualityDetector } from './core';
+export * from './react';

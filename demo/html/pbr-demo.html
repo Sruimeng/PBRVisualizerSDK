@@ -1,91 +1,72 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PBR Visualizer SDK - 产品配置器演示</title>
+    <title>Cinematic PBR Studio</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background: #0f0c29;
-            color: white;
-            overflow: hidden;
+        /* Sketchfab 风格的深邃背景: 更加细腻的径向渐变 */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: radial-gradient(circle at center, #3a3a3a 0%, #1b1b1b 40%, #050505 100%);
+            font-family: 'Segoe UI', sans-serif;
         }
         
-        .container {
-            display: flex;
-            height: 100vh;
+        #ui {
+            position: absolute; top: 20px; left: 20px; color: #eee; pointer-events: none;
+            background: rgba(0,0,0,0.6); padding: 15px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 300px;
+            z-index: 20;
         }
         
-        .viewer-container {
-            flex: 1;
-            position: relative;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        }
+        h1 { margin: 0 0 8px 0; font-size: 15px; color: #4af; letter-spacing: 0.5px; text-transform: uppercase; }
+        p { margin: 0; font-size: 11px; color: #aaa; line-height: 1.8; font-weight: 500; }
+        .tag { color: #fff; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
         
+        /* Controls Panel - Glassmorphism */
         .controls-panel {
-            width: 300px;
-            background: rgba(15, 12, 41, 0.9);
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 90vh;
             overflow-y: auto;
+            pointer-events: auto;
+            z-index: 20;
         }
         
-        .control-group {
-            margin-bottom: 25px;
-        }
-        
+        .control-group { margin-bottom: 20px; }
         .control-group h3 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            color: #64b5f6;
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            color: #4af;
             text-transform: uppercase;
             letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
         }
         
-        .color-picker {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .color-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .color-option:hover {
-            transform: scale(1.1);
-            border-color: #64b5f6;
-        }
-        
-        .color-option.active {
-            border-color: #64b5f6;
-            box-shadow: 0 0 10px rgba(100, 181, 246, 0.5);
-        }
-        
-        .slider-group {
-            margin-bottom: 15px;
-        }
-        
+        .slider-group { margin-bottom: 10px; }
         .slider-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 14px;
+            margin-bottom: 4px;
+            font-size: 11px;
+            color: #ccc;
         }
         
         .slider {
             width: 100%;
             height: 4px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
             outline: none;
             -webkit-appearance: none;
@@ -93,213 +74,122 @@
         
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #64b5f6;
+            width: 12px;
+            height: 12px;
+            background: #4af;
             border-radius: 50%;
             cursor: pointer;
+            transition: transform 0.1s;
         }
         
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
         
+        .button-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn {
-            padding: 8px 16px;
-            background: rgba(100, 181, 246, 0.2);
-            border: 1px solid rgba(100, 181, 246, 0.3);
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 4px;
-            color: white;
+            color: #ddd;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 12px;
+            font-size: 11px;
+            transition: all 0.2s;
         }
+        .btn:hover { background: rgba(68, 170, 255, 0.2); border-color: #4af; color: #fff; }
+        .btn.active { background: #4af; color: #000; border-color: #4af; }
         
-        .btn:hover {
-            background: rgba(100, 181, 246, 0.3);
-            border-color: #64b5f6;
+        .color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+        .color-option {
+            width: 24px; height: 24px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
         }
-        
-        .btn-primary {
-            background: #64b5f6;
-            border-color: #64b5f6;
-        }
-        
-        .btn-primary:hover {
-            background: #42a5f5;
-        }
-        
-        .stats {
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.active { border-color: #4af; box-shadow: 0 0 8px rgba(68, 170, 255, 0.4); }
+
+        #canvas-container {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            line-height: 1.4;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+        #viewer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
         }
         
         .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(100, 181, 246, 0.3);
-            border-top: 4px solid #64b5f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error {
-            color: #f44336;
-            background: rgba(244, 67, 54, 0.1);
-            border: 1px solid rgba(244, 67, 54, 0.3);
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #4af; font-size: 12px; letter-spacing: 1px;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="viewer-container">
-            <div id="viewer" style="width: 100%; height: 100%;"></div>
-            <div class="stats" id="stats">
-                <div>FPS: <span id="fps">0</span></div>
-                <div>Draw Calls: <span id="drawCalls">0</span></div>
-                <div>Triangles: <span id="triangles">0</span></div>
-                <div>Memory: <span id="memory">0</span>MB</div>
+    <div id="ui">
+        <h1>🧊 PBR Viewer Pro</h1>
+        <p><span class="tag">NEW</span><b>Dynamic Blob Shadow</b> (Position/Height Tracking)</p>
+        <p><span class="tag">AO</span><b>SSAO</b> (Contact Shadows)</p>
+        <p><span class="tag">LIGHT</span><b>Hybrid RectArea</b> (Softbox Setup)</p>
+        <p style="margin-top: 8px; color: #888;">* Model is auto-rotating to demonstrate shadow tracking</p>
+    </div>
+
+    <div class="controls-panel">
+        <div class="control-group">
+            <h3>Environment</h3>
+            <div class="button-group">
+                <button class="btn active" id="studioEnv">Studio</button>
+                <button class="btn" id="hdrEnv">HDR</button>
+                <button class="btn" id="noiseEnv">Noise</button>
             </div>
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <div>正在加载3D模型...</div>
+            <div class="slider-group" style="margin-top: 10px;">
+                <div class="slider-label"><span>Intensity</span><span id="envIntensityValue">1.0</span></div>
+                <input type="range" class="slider" id="envIntensity" min="0" max="3" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3>Material</h3>
+            <div class="color-picker" id="bodyColors" style="margin-bottom: 10px;">
+                <div class="color-option active" data-color="#ffffff" style="background: #ffffff;"></div>
+                <div class="color-option" data-color="#ff3333" style="background: #ff3333;"></div>
+                <div class="color-option" data-color="#3333ff" style="background: #3333ff;"></div>
+                <div class="color-option" data-color="#33ff33" style="background: #33ff33;"></div>
+                <div class="color-option" data-color="#111111" style="background: #111111;"></div>
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Roughness</span><span id="roughnessValue">0.2</span></div>
+                <input type="range" class="slider" id="roughness" min="0" max="1" step="0.01" value="0.2">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Metalness</span><span id="metalnessValue">0.9</span></div>
+                <input type="range" class="slider" id="metalness" min="0" max="1" step="0.01" value="0.9">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3>Post Processing</h3>
+            <div class="button-group">
+                <button class="btn active" id="ssaoToggle">SSAO</button>
+                <button class="btn active" id="bloomToggle">Bloom</button>
             </div>
         </div>
         
-        <div class="controls-panel">
-            <h2 style="margin-top: 0; color: #64b5f6;">PBR 可视化器</h2>
-            
-            <div class="control-group">
-                <h3>材质颜色</h3>
-                <div class="color-picker" id="bodyColors">
-                    <div class="color-option active" data-color="#ff0000" style="background: #ff0000;"></div>
-                    <div class="color-option" data-color="#0000ff" style="background: #0000ff;"></div>
-                    <div class="color-option" data-color="#00ff00" style="background: #00ff00;"></div>
-                    <div class="color-option" data-color="#ffff00" style="background: #ffff00;"></div>
-                    <div class="color-option" data-color="#ff00ff" style="background: #ff00ff;"></div>
-                    <div class="color-option" data-color="#00ffff" style="background: #00ffff;"></div>
-                    <div class="color-option" data-color="#ffffff" style="background: #ffffff;"></div>
-                    <div class="color-option" data-color="#000000" style="background: #000000;"></div>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>材质属性</h3>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>粗糙度</span>
-                        <span id="roughnessValue">0.2</span>
-                    </div>
-                    <input type="range" class="slider" id="roughness" min="0" max="1" step="0.01" value="0.2">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>金属度</span>
-                        <span id="metalnessValue">0.9</span>
-                    </div>
-                    <input type="range" class="slider" id="metalness" min="0" max="1" step="0.01" value="0.9">
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>环境设置</h3>
-                <div class="button-group">
-                    <button class="btn" id="noiseSphere">噪波球体</button>
-                    <button class="btn" id="hdrEnv">HDR环境</button>
-                    <button class="btn" id="procedural">程序化</button>
-                    <button class="btn" id="pmremToggle">高精PMREM: 关闭</button>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>环境强度</span>
-                        <span id="envIntensityValue">1.0</span>
-                    </div>
-                    <input type="range" class="slider" id="envIntensity" min="0" max="2" step="0.1" value="1.0">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>背景半径</span>
-                        <span id="bgRadiusValue">0.75</span>
-                    </div>
-                    <input type="range" class="slider" id="bgRadius" min="0.3" max="0.95" step="0.01" value="0.75">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>边缘平滑</span>
-                        <span id="bgSmoothValue">0.15</span>
-                    </div>
-                    <input type="range" class="slider" id="bgSmooth" min="0.02" max="0.4" step="0.01" value="0.15">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>渐晕阈值</span>
-                        <span id="bgVignetteValue">0.85</span>
-                    </div>
-                    <input type="range" class="slider" id="bgVignette" min="0.6" max="0.98" step="0.01" value="0.85">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>中心亮度</span>
-                        <span id="bgBrightValue">0.10</span>
-                    </div>
-                    <input type="range" class="slider" id="bgBright" min="0.0" max="0.4" step="0.01" value="0.10">
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>相机控制</h3>
-                <div class="button-group">
-                    <button class="btn" id="resetCamera">重置视角</button>
-                    <button class="btn" id="autoRotate">自动旋转</button>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>操作</h3>
-                <div class="button-group">
-                    <button class="btn" id="undo">撤销</button>
-                    <button class="btn" id="redo">重做</button>
-                    <button class="btn btn-primary" id="share">分享配置</button>
-                    <button class="btn btn-primary" id="screenshot">截图</button>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>质量设置</h3>
-                <div class="button-group">
-                    <button class="btn" id="qualityHigh">高质量</button>
-                    <button class="btn" id="qualityMedium">中等质量</button>
-                    <button class="btn" id="qualityLow">低质量</button>
-                </div>
+        <div class="control-group">
+            <h3>Actions</h3>
+            <div class="button-group">
+                <button class="btn" id="autoRotate">Rotate</button>
+                <button class="btn" id="resetCamera">Reset</button>
             </div>
         </div>
     </div>
+
+    <div id="viewer"></div>
+    <div class="loading" id="loading">LOADING MODEL...</div>
 
     <script type="module" src="../src/pbr-demo.ts"></script>
 </body>
