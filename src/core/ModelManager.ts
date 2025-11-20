@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import { QualityConfig, ModelSource } from '../types/core';
+import { QualityConfig } from '../types/core';
 
 export class ModelManager {
   private quality: QualityConfig;
-  private gltfLoader: GLTFLoader;
-  private dracoLoader: DRACOLoader;
+   gltfLoader?: GLTFLoader;
+   dracoLoader?: DRACOLoader;
   private loadedModels: Map<string, THREE.Object3D> = new Map();
   private modelStats: Map<string, { triangles: number; materials: number }> = new Map();
 
@@ -15,28 +15,11 @@ export class ModelManager {
     this.initializeLoaders();
   }
 
-  async loadModel(modelId: string, source: ModelSource): Promise<THREE.Object3D> {
+  async loadModel(modelId: string, source: string): Promise<THREE.Object3D> {
     try {
       let object: THREE.Object3D;
 
-      if (typeof source === 'string') {
-        // URL加载
-        object = await this.loadFromURL(source);
-      } else if (source instanceof File) {
-        // 文件加载
-        object = await this.loadFromFile(source);
-      } else if (source instanceof Blob) {
-        // Blob加载
-        object = await this.loadFromBlob(source);
-      } else if (source instanceof ArrayBuffer) {
-        // ArrayBuffer加载（假设是GLB格式）
-        object = await this.loadFromArrayBuffer(source);
-      } else if ('url' in source && 'type' in source) {
-        // 带类型的URL
-        object = await this.loadFromURL(source.url);
-      } else {
-        throw new Error('Unsupported model source type');
-      }
+      object = await this.loadFromURL(source);
 
       // 设置模型属性
       object.name = modelId;

@@ -160,12 +160,23 @@ export interface AnimationState {
   playing: boolean;
 }
 
+export interface ControlState {
+  // 是否启用控制；默认值：true
+  enabled: boolean;
+  // 是否自动旋转；默认值：false
+  autoRotate: boolean;
+  // 自动旋转速度；默认值：1.0
+  autoRotateSpeed: number;
+}
+
 // 模型状态：可见性、变换、材质与动画集合
 export interface ModelState {
   // 动画参数
   animations: AnimationState[];
   // 灯光参数；默认值：[]
   light?: LightState[];
+  // 控制参数
+  controls?: ControlState;
   // 材质参数
   material?: MaterialState;
   // 模型是否可见；默认值：true

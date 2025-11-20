@@ -185,7 +185,7 @@ const draco = new DRACOLoader();
 draco.setDecoderPath('https://unpkg.com/three@0.158.0/examples/jsm/libs/draco/');
 loader.setDRACOLoader(draco);
 
-loader.load('./demo/glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb', (gltf) => {
+loader.load('./demo/glb/military+character+3d+model_Clone1.glb', (gltf) => {
     const model = gltf.scene;
     
     // 自动计算包围盒并缩放
@@ -217,6 +217,7 @@ loader.load('./demo/glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99
             child.receiveShadow = false;
             if (child.material.map) child.material.map.anisotropy = maxAnisotropy;
             child.material.envMapIntensity = 1.0;
+            child.material.flatShading = true;
         }
     });
 
