@@ -29,9 +29,10 @@ const DEFAULT_LIGHT_STATE: LightState[] = [
     size: [5, 5],
   },
 ];
-export class LightManager {
-  constructor(scene: Scene, model: Mesh,options?: LightState[]) {
-    const lightOptions = options || DEFAULT_LIGHT_STATE;
+
+// 创建灯光
+export function createLights(scene: Scene, model: Mesh,options?: LightState[]) {
+  const lightOptions = options || DEFAULT_LIGHT_STATE;
     lightOptions.forEach((lightState) => {
       const modelPosition = model.position;
       const { enabled = true, type = 'rectAreaLight', color = new Color(0xffffff), intensity = 1.0, position = new Vector3(0, 0, 0), size = [1, 1] } = lightState;
@@ -58,5 +59,4 @@ export class LightManager {
         scene.add(light);
       }
     });
-  }
 }
