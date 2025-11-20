@@ -3,6 +3,16 @@ import dts from 'vite-plugin-dts';
 import { resolve } from 'path';
 
 export default defineConfig({
+  server: {
+    host: '0.0.0.0',
+    port: 8080,
+    strictPort: false,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 8080,
+    strictPort: false,
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -28,7 +38,7 @@ export default defineConfig({
   plugins: [
     dts({
       insertTypesEntry: true,
-      outputDir: 'dist/types'
+      outDir: 'dist/types'
     })
   ],
   resolve: {
