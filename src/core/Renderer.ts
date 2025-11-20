@@ -11,7 +11,6 @@ import {
 } from '../types/core';
 import { RectAreaLight } from 'three';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
-import { EnvironmentSystem } from './EnvironmentSystem';
 import { PMREMGenerator } from './PMREMGenerator';
 import { PostProcessor } from './PostProcessor';
 import { ShadowSystem } from './ShadowSystem';
@@ -41,7 +40,6 @@ export class Renderer {
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private composer: any; // 使用any类型避免导入问题
-  private environmentSystem: EnvironmentSystem;
   private pmremGenerator: PMREMGenerator;
   private postProcessor: PostProcessor;
   private shadowSystem: ShadowSystem;
@@ -157,7 +155,6 @@ export class Renderer {
   }
 
   updateEnvironment(config: EnvironmentConfig): void {
-    this.environmentSystem.updateEnvironment(config);
     this.envIntensity = config.intensity ?? (config.hdr?.intensity ?? 1.0);
     this.useCustomPMREM = !!config.useCustomPMREM;
     if (config.type === 'studio') {
@@ -257,7 +254,6 @@ export class Renderer {
       this.pmremRenderTarget.dispose();
     }
 
-    this.environmentSystem.dispose();
     this.pmremGenerator.dispose();
     this.postProcessor.dispose();
     this.shadowSystem.dispose();
@@ -302,7 +298,6 @@ export class Renderer {
   }
 
   private initializeSystems(): void {
-    this.environmentSystem = new EnvironmentSystem(this.quality, this.renderer);
     this.pmremGenerator = new PMREMGenerator(this.renderer);
     this.postProcessor = new PostProcessor(this.renderer, this.camera, this.quality);
     this.shadowSystem = new ShadowSystem(this.scene);
@@ -449,7 +444,6 @@ void main(){
   }
 
   private generateEnvironment(): void {
-    const envType = this.environmentSystem.getCurrentType();
 
     if (envType === 'noise-sphere' && this.bgScene && this.bgMaterial && this.bgCamera) {
       const drawSize = new THREE.Vector2();
@@ -506,8 +500,6 @@ void main(){
       }
     }
 
-    const maps = this.environmentSystem.generateEnvironment();
-    this.environmentMap = maps.environmentMap;
     if (this.environmentMap) {
       const pmrem = this.pmremGenerator.generatePMREM(this.environmentMap);
       this.irradianceMap = pmrem.irradiance;

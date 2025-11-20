@@ -159,7 +159,6 @@ export class StateMachine {
     return {
       global: {
         environment: {
-          type: 'noise-sphere',
           sphere: { radius: 0.8, pulse: false }
         },
         camera: {
@@ -190,6 +189,12 @@ export class StateMachine {
           antialiasing: {
             type: 'fxaa',
             enabled: true
+          },
+          ssao: {
+            enabled: false,
+            kernelRadius: 0,
+            minDistance: 0,
+            maxDistance: 0
           }
         },
         sceneSettings: {

@@ -307,6 +307,12 @@ export class PBRVisualizer extends BaseEmitter {
         },
         postProcessing: {
           enabled: true,
+          ssao: {
+            enabled: true,
+            kernelRadius: 0,
+            minDistance: 0,
+            maxDistance: 0
+          },
           toneMapping: {
             type: 'aces',
             exposure: 1.0,

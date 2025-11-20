@@ -1,9 +1,4 @@
-import * as THREE from 'three';
-
-// 基础数学类型
-export type Vector3 = THREE.Vector3;
-export type Euler = THREE.Euler;
-export type Color = THREE.Color;
+import { Color, Euler, ToneMapping, Vector3 } from 'three';
 
 // 全局状态接口
 export interface GlobalState {
@@ -13,13 +8,12 @@ export interface GlobalState {
   sceneSettings: {
     exposure: number;
     gamma: number;
-    toneMapping: THREE.ToneMapping;
+    toneMapping: ToneMapping;
   };
 }
 
 // 环境配置
 export interface EnvironmentConfig {
-  type: 'noise-sphere' | 'hdr' | 'procedural' | 'studio';
   intensity?: number;
   useCustomPMREM?: boolean;
   samples?: number;
