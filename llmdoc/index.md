@@ -37,6 +37,11 @@
 - 基础初始化和配置
 - 第一个模型加载和渲染
 
+**[材质编辑器使用指南](guides/material-editor-usage.md)** - 专业材质编辑器使用教程
+- 材质参数实时调节
+- 6种材质预设应用
+- 性能优化和监控
+
 **[API初始化配置](guides/api-setup.md)** - SDK初始化和基础配置
 - 构造函数选项详解
 - 全局状态配置
@@ -86,6 +91,7 @@
 - PBR材质参数详解
 - Studio三点布光系统
 - 材质预设应用
+- 材质编辑器集成
 
 **[PBR材质创建工作流](guides/pbr-material-creation-workflow.md)** - 材质创建、配置和优化指南
 - 材质创建流程
@@ -123,6 +129,7 @@
 - 完整使用示例
 - 错误处理模式
 - 性能优化实践
+- 材质编辑器高级示例
 
 **[编码约定](reference/coding-conventions.md)** - TypeScript、ESLint、Prettier规范
 - 代码风格指南
@@ -160,16 +167,16 @@
 
 ## 📊 文档统计
 
-- **总文档数**: 27个
+- **总文档数**: 28个
 - **架构文档**: 3个
-- **指南文档**: 13个
+- **指南文档**: 14个
 - **参考文档**: 8个
 - **分析报告**: 3个
 - **代码示例**: 包含完整的使用示例和最佳实践
 
 ## 🔗 快速导航
 
-- **新手入门**: [快速开始](guides/quick-start.md) → [API初始化配置](guides/api-setup.md) → [基础渲染工作流](guides/basic-rendering-workflow.md)
+- **新手入门**: [快速开始](guides/quick-start.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [API初始化配置](guides/api-setup.md)
 - **深度学习**: [项目概览](overview/project-overview.md) → [核心渲染系统](architecture/core-rendering-system.md) → [状态管理架构](architecture/state-management.md)
 - **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [智能分析报告](agent/)
-- **架构设计**: [PBR材质系统](architecture/pbr-material-system.md) → [环境系统](guides/environment-system.md) → [后处理效果](guides/post-processing.md)
+- **材质设计**: [材质编辑器使用指南](guides/material-editor-usage.md) → [材质和光照配置](guides/material-and-lighting-configuration.md) → [PBR材质系统](architecture/pbr-material-system.md)

@@ -175,3 +175,131 @@ createApp().then(visualizer => {
     console.log('PBR应用创建成功');
 });
 ```
+
+## 8. 材质编辑器示例
+
+```typescript
+import { MaterialEditorDemo } from './demo/src/material-editor/index';
+
+// 初始化材质编辑器
+const editor = new MaterialEditorDemo({
+    container: document.getElementById('editor'),
+    modelSource: './models/sample.glb'
+});
+
+await editor.initialize();
+
+// 基础材质编辑
+editor.updateMaterial({
+    color: '#ff6b6b',
+    metalness: 0.8,
+    roughness: 0.2
+});
+
+// 应用材质预设
+editor.applyPreset('glass');
+
+// 监听材质变化
+editor.on('materialUpdated', (params) => {
+    console.log('材质参数更新:', params);
+});
+
+// 导出材质配置
+const config = editor.exportMaterial();
+console.log('材质配置:', config);
+
+// 性能监控
+editor.on('performanceUpdate', (stats) => {
+    console.log('性能:', stats.fps, 'FPS');
+});
+```
+
+## 9. 高级材质示例
+
+```typescript
+// 金属材质 + 清漆效果
+await visualizer.updateModel('model', {
+    material: {
+        color: '#888888',
+        metalness: 1.0,
+        roughness: 0.1,
+        clearcoat: 0.8,
+        clearcoatRoughness: 0.1,
+        envMapIntensity: 1.2
+    }
+});
+
+// 玻璃材质 + 透射效果
+await visualizer.updateModel('model', {
+    material: {
+        color: '#ffffff',
+        metalness: 0.0,
+        roughness: 0.0,
+        transmission: 0.9,
+        transparent: true,
+        opacity: 0.3,
+        thickness: 0.5,
+        ior: 1.5
+    }
+});
+
+// 织物材质 + 漫反射
+await visualizer.updateModel('model', {
+    material: {
+        color: '#444444',
+        metalness: 0.0,
+        roughness: 1.0,
+        envMapIntensity: 0.3
+    }
+});
+
+// 混合材质（金属 + 透射）
+await visualizer.updateModel('model', {
+    material: {
+        color: '#666666',
+        metalness: 0.6,
+        roughness: 0.3,
+        transmission: 0.4,
+        transparent: true,
+        opacity: 0.8,
+        thickness: 0.3,
+        envMapIntensity: 1.0
+    }
+});
+```
+
+## 10. 材质预设系统示例
+
+```typescript
+// 获取所有内置预设
+const presets = visualizer.materialSystem.getPresets();
+console.log('可用预设:', presets);
+
+// 创建自定义预设
+const customPreset = {
+    name: '自定义材质',
+    params: {
+        color: '#ff6b6b',
+        metalness: 0.5,
+        roughness: 0.3,
+        clearcoat: 0.2,
+        transmission: 0.1,
+        envMapIntensity: 1.0
+    }
+};
+
+// 添加预设
+visualizer.materialSystem.addPreset(customPreset);
+
+// 应用预设
+await visualizer.applyMaterialPreset('model', '自定义材质');
+
+// 获取预设详情
+const presetDetails = visualizer.materialSystem.getPresetDetails('金属');
+console.log('金属预设详情:', presetDetails);
+
+// 导出预设配置
+const presetConfig = visualizer.materialSystem.exportPreset('自定义材质');
+console.log('预设配置:', presetConfig);
+```
+```

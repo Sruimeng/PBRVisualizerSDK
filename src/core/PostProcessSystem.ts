@@ -51,11 +51,12 @@ export class PostProcessSystem {
         this.composer = new EffectComposer(renderer);
         this.renderPass = new RenderPass(scene, camera);
         this.outputPass = new OutputPass();
+        // 默认配置
+        this.currentConfig = this.getDefaultConfig();
 
         this.setupComposer(width, height);
 
-        // 默认配置
-        this.currentConfig = this.getDefaultConfig();
+        
 
         console.log('PostProcessSystem initialized');
     }

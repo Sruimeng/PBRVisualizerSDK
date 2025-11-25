@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PBR Visualizer SDK - 纯Three.js材质编辑器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        #viewer {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* 控制面板 */
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .controls h2 {
+            margin-bottom: 20px;
+            color: #4af;
+            font-size: 16px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            margin-bottom: 15px;
+            color: #ccc;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+
+        .control {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #4af;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .value {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 12px;
+            color: #4af;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: rgba(68, 170, 255, 0.2);
+            border-color: #4af;
+        }
+
+        /* 信息面板 */
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 12px;
+            min-width: 180px;
+        }
+
+        .info h3 {
+            margin-bottom: 10px;
+            color: #4af;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            color: #888;
+        }
+
+        .info-value {
+            color: #0ff;
+        }
+
+        /* 预设按钮组 */
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preset-btn {
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        /* 加载提示 */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #4af;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="viewer"></div>
+
+    <!-- 加载提示 -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在初始化...</div>
+    </div>
+
+    <!-- 信息面板 -->
+    <div class="info">
+        <h3>PBR材质编辑器</h3>
+        <p style="font-size: 11px; color: #888; margin-top: 5px;">纯Three.js实现</p>
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="info-row">
+                <span class="info-label">FPS:</span>
+                <span class="info-value" id="fps">60</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Draw Calls:</span>
+                <span class="info-value" id="drawCalls">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Triangles:</span>
+                <span class="info-value" id="triangles">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="controls">
+        <h2>材质参数编辑器</h2>
+
+        <!-- 基础参数 -->
+        <div class="control-group">
+            <h3>基础属性</h3>
+
+            <div class="control">
+                <label>颜色</label>
+                <input type="color" id="color" value="#ffffff">
+            </div>
+
+            <div class="control">
+                <label>金属度 <span class="value" id="metalness-value">0.5</span></label>
+                <input type="range" id="metalness" min="0" max="1" step="0.01" value="0.5">
+            </div>
+
+            <div class="control">
+                <label>粗糙度 <span class="value" id="roughness-value">0.5</span></label>
+                <input type="range" id="roughness" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+
+        <!-- 高级参数 -->
+        <div class="control-group">
+            <h3>高级属性</h3>
+
+            <div class="control">
+                <label>环境强度 <span class="value" id="envIntensity-value">1.0</span></label>
+                <input type="range" id="envIntensity" min="0" max="2" step="0.01" value="1.0">
+            </div>
+
+            <div class="control">
+                <label>发射光强度 <span class="value" id="emissive-value">0.0</span></label>
+                <input type="range" id="emissive" min="0" max="1" step="0.01" value="0.0">
+            </div>
+        </div>
+
+        <!-- 预设 -->
+        <div class="control-group">
+            <h3>材质预设</h3>
+            <div class="presets">
+                <button class="preset-btn" onclick="applyPreset('metal')">金属</button>
+                <button class="preset-btn" onclick="applyPreset('plastic')">塑料</button>
+                <button class="preset-btn" onclick="applyPreset('glass')">玻璃</button>
+                <button class="preset-btn" onclick="applyPreset('wood')">木材</button>
+                <button class="preset-btn" onclick="applyPreset('ceramic')">陶瓷</button>
+                <button class="preset-btn" onclick="applyPreset('glow')">发光</button>
+            </div>
+        </div>
+
+        <!-- 操作 -->
+        <div class="control-group">
+            <h3>操作</h3>
+            <button onclick="resetMaterial()">重置材质</button>
+            <button onclick="randomizeMaterial()">随机材质</button>
+            <button onclick="toggleAutoRotate()">切换自动旋转</button>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.181.2/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.181.2/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        let scene, camera, renderer, controls;
+        let mesh, material;
+        let autoRotate = true;
+        let stats = {
+            fps: 0,
+            drawCalls: 0,
+            triangles: 0,
+            lastTime: performance.now()
+        };
+
+        // 初始化场景
+        function init() {
+            // 场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+
+            // 相机
+            camera = new THREE.PerspectiveCamera(
+                50,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(2, 2, 5);
+
+            // 渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+            document.getElementById('viewer').appendChild(renderer.domElement);
+
+            // 控制器
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 2.0;
+
+            setupLights();
+            createModel();
+            setupControls();
+            animate();
+
+            // 隐藏加载提示
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // 设置灯光
+        function setupLights() {
+            // 环境光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            // 主光源
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+            mainLight.position.set(5, 5, 5);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            scene.add(mainLight);
+
+            // 补光
+            const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+            fillLight.position.set(-5, 0, -5);
+            scene.add(fillLight);
+
+            // 背光
+            const rimLight = new THREE.DirectionalLight(0xffffff, 0.4);
+            rimLight.position.set(0, 5, -5);
+            scene.add(rimLight);
+        }
+
+        // 创建模型
+        function createModel() {
+            const geometry = new THREE.SphereGeometry(1, 64, 64);
+            material = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                metalness: 0.5,
+                roughness: 0.5
+            });
+
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+
+            // 创建地面
+            const groundGeometry = new THREE.PlaneGeometry(10, 10);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x222222,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -1.5;
+            ground.receiveShadow = true;
+            scene.add(ground);
+        }
+
+        // 设置控制器
+        function setupControls() {
+            // 颜色控制
+            const colorInput = document.getElementById('color');
+            colorInput.addEventListener('input', (e) => {
+                updateMaterial('color', e.target.value);
+            });
+
+            // 滑块控制
+            const sliders = ['metalness', 'roughness', 'envIntensity', 'emissive'];
+            sliders.forEach(id => {
+                const slider = document.getElementById(id);
+                const valueSpan = document.getElementById(id + '-value');
+
+                slider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    valueSpan.textContent = value.toFixed(2);
+
+                    if (id === 'emissive') {
+                        material.emissiveIntensity = value;
+                        if (value > 0) {
+                            material.emissive = material.color;
+                        } else {
+                            material.emissive = new THREE.Color(0x000000);
+                        }
+                    } else {
+                        updateMaterial(id, value);
+                    }
+                });
+            });
+
+            // 窗口大小调整
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // 更新材质
+        function updateMaterial(property, value) {
+            if (!material) return;
+
+            if (property === 'color') {
+                material.color = new THREE.Color(value);
+            } else if (property === 'envIntensity') {
+                material.envMapIntensity = value;
+            } else {
+                material[property] = value;
+            }
+            material.needsUpdate = true;
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+
+            controls.update();
+            renderer.render(scene, camera);
+
+            updateStats();
+        }
+
+        // 更新统计
+        function updateStats() {
+            const now = performance.now();
+            const delta = now - stats.lastTime;
+            stats.fps = Math.round(1000 / delta);
+            stats.lastTime = now;
+
+            stats.drawCalls = renderer.info.render.calls;
+            stats.triangles = renderer.info.render.triangles;
+
+            // 更新显示
+            document.getElementById('fps').textContent = stats.fps;
+            document.getElementById('drawCalls').textContent = stats.drawCalls;
+            document.getElementById('triangles').textContent = stats.triangles;
+        }
+
+        // 窗口大小调整
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 应用预设
+        window.applyPreset = function(preset) {
+            const presets = {
+                metal: {
+                    color: '#cccccc',
+                    metalness: 1.0,
+                    roughness: 0.2,
+                    envIntensity: 1.5
+                },
+                plastic: {
+                    color: '#4a90e2',
+                    metalness: 0.0,
+                    roughness: 0.5,
+                    envIntensity: 0.8
+                },
+                glass: {
+                    color: '#ffffff',
+                    metalness: 0.0,
+                    roughness: 0.0,
+                    envIntensity: 1.0
+                },
+                wood: {
+                    color: '#8b4513',
+                    metalness: 0.0,
+                    roughness: 0.8,
+                    envIntensity: 0.6
+                },
+                ceramic: {
+                    color: '#ffffff',
+                    metalness: 0.0,
+                    roughness: 0.1,
+                    envIntensity: 1.2
+                },
+                glow: {
+                    color: '#ff00ff',
+                    metalness: 0.0,
+                    roughness: 0.0,
+                    envIntensity: 2.0
+                }
+            };
+
+            const presetValues = presets[preset];
+            if (presetValues) {
+                // 更新UI
+                if (presetValues.color) {
+                    document.getElementById('color').value = presetValues.color;
+                }
+                document.getElementById('metalness').value = presetValues.metalness;
+                document.getElementById('roughness').value = presetValues.roughness;
+                document.getElementById('envIntensity').value = presetValues.envIntensity || 1.0;
+
+                // 更新显示值
+                document.getElementById('metalness-value').textContent = presetValues.metalness.toFixed(2);
+                document.getElementById('roughness-value').textContent = presetValues.roughness.toFixed(2);
+                document.getElementById('envIntensity-value').textContent = (presetValues.envIntensity || 1.0).toFixed(2);
+
+                // 更新材质
+                Object.entries(presetValues).forEach(([key, value]) => {
+                    updateMaterial(key, value);
+                });
+            }
+        };
+
+        // 重置材质
+        window.resetMaterial = function() {
+            const defaults = {
+                color: '#ffffff',
+                metalness: 0.5,
+                roughness: 0.5,
+                envIntensity: 1.0
+            };
+
+            Object.entries(defaults).forEach(([key, value]) => {
+                if (key === 'color') {
+                    document.getElementById('color').value = value;
+                } else {
+                    document.getElementById(key).value = value;
+                    document.getElementById(key + '-value').textContent = value.toFixed(2);
+                }
+                updateMaterial(key, value);
+            });
+
+            // 重置发射光
+            document.getElementById('emissive').value = 0;
+            document.getElementById('emissive-value').textContent = '0.00';
+            material.emissiveIntensity = 0;
+            material.emissive = new THREE.Color(0x000000);
+        };
+
+        // 随机材质
+        window.randomizeMaterial = function() {
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+            const randomMetalness = Math.random();
+            const randomRoughness = Math.random();
+
+            document.getElementById('color').value = randomColor;
+            document.getElementById('metalness').value = randomMetalness;
+            document.getElementById('roughness').value = randomRoughness;
+            document.getElementById('metalness-value').textContent = randomMetalness.toFixed(2);
+            document.getElementById('roughness-value').textContent = randomRoughness.toFixed(2);
+
+            updateMaterial('color', randomColor);
+            updateMaterial('metalness', randomMetalness);
+            updateMaterial('roughness', randomRoughness);
+        };
+
+        // 切换自动旋转
+        window.toggleAutoRotate = function() {
+            autoRotate = !autoRotate;
+            controls.autoRotate = autoRotate;
+        };
+
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>
