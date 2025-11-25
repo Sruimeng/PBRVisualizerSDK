@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { resolve } from 'path';
 
 export default defineConfig({
@@ -41,6 +42,13 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
       outDir: 'dist/types'
+    }),
+    viteStaticCopy({
+      targets: [
+        { src: 'ai_studio_code.html', dest: '.' },
+        { src: 'gl.html', dest: '.' },
+        { src: 'demo/**', dest: 'demo' }
+      ]
     })
   ],
   resolve: {

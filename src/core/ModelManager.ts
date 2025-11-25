@@ -5,10 +5,9 @@ import { QualityConfig } from '../types/core';
 
 export class ModelManager {
   private quality: QualityConfig;
-   gltfLoader?: GLTFLoader;
-   dracoLoader?: DRACOLoader;
+  gltfLoader: GLTFLoader;
+  dracoLoader?: DRACOLoader;
   private loadedModels: Map<string, THREE.Object3D> = new Map();
-  private modelStats: Map<string, { triangles: number; materials: number }> = new Map();
 
   constructor(quality: QualityConfig) {
     this.quality = quality;
@@ -24,11 +23,6 @@ export class ModelManager {
       // 设置模型属性
       object.name = modelId;
       this.setupModel(object);
-
-      // 统计模型信息
-      const stats = this.calculateModelStats(object);
-      this.modelStats.set(modelId, stats);
-
       // 缓存模型
       this.loadedModels.set(modelId, object);
 
@@ -41,8 +35,6 @@ export class ModelManager {
       );
       placeholder.name = modelId;
       this.setupModel(placeholder);
-      const stats = this.calculateModelStats(placeholder);
-      this.modelStats.set(modelId, stats);
       this.loadedModels.set(modelId, placeholder);
       return placeholder;
     }
@@ -52,20 +44,11 @@ export class ModelManager {
     return this.loadedModels.get(modelId);
   }
 
-  getTriangleCount(modelId: string): number {
-    return this.modelStats.get(modelId)?.triangles || 0;
-  }
-
-  getMaterialCount(modelId: string): number {
-    return this.modelStats.get(modelId)?.materials || 0;
-  }
-
   removeModel(modelId: string): boolean {
     const model = this.loadedModels.get(modelId);
     if (model) {
       this.disposeObject(model);
       this.loadedModels.delete(modelId);
-      this.modelStats.delete(modelId);
       return true;
     }
     return false;
@@ -76,7 +59,6 @@ export class ModelManager {
       this.disposeObject(model);
     });
     this.loadedModels.clear();
-    this.modelStats.clear();
   }
 
   private initializeLoaders(): void {
@@ -239,35 +221,6 @@ export class ModelManager {
         }
       }
     }
-  }
-
-  private calculateModelStats(object: THREE.Object3D): { triangles: number; materials: number } {
-    let triangles = 0;
-    let materials = new Set<string>();
-
-    object.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.geometry) {
-        const geometry = child.geometry;
-        if (geometry.index) {
-          triangles += geometry.index.count / 3;
-        } else if (geometry.attributes.position) {
-          triangles += geometry.attributes.position.count / 3;
-        }
-
-        if (child.material) {
-          if (Array.isArray(child.material)) {
-            child.material.forEach(mat => materials.add(mat.name));
-          } else {
-            materials.add(child.material.name);
-          }
-        }
-      }
-    });
-
-    return {
-      triangles: Math.floor(triangles),
-      materials: materials.size
-    };
   }
 
   private disposeObject(object: THREE.Object3D): void {

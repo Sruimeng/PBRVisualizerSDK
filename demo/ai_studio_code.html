@@ -1,0 +1,352 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Cinematic PBR Studio</title>
+    <style>
+        /* Sketchfab 风格的深邃背景: 更加细腻的径向渐变 */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: radial-gradient(circle at center, #3a3a3a 0%, #1b1b1b 40%, #050505 100%);
+        }
+        #ui {
+            position: absolute; top: 20px; left: 20px; color: #eee; pointer-events: none;
+            font-family: 'Segoe UI', sans-serif; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        h1 { margin: 0 0 8px 0; font-size: 15px; color: #4af; letter-spacing: 0.5px; text-transform: uppercase; }
+        p { margin: 0; font-size: 11px; color: #aaa; line-height: 1.8; font-weight: 500; }
+        .tag { color: #fff; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
+        #ui button { pointer-events: auto; background: rgba(255,255,255,0.08); color: #eee; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+        #ui button:hover { background: rgba(255,255,255,0.15); }
+    </style>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.24",
+    "@react-three/fiber": "https://aistudiocdn.com/@react-three/fiber@^9.4.0",
+    "@react-three/drei": "https://aistudiocdn.com/@react-three/drei@^10.7.7"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="ui">
+        <h1>🧊 PBR Viewer Pro</h1>
+        <p><span class="tag">NEW</span><b>Dynamic Blob Shadow</b> (Position/Height Tracking)</p>
+        <p><span class="tag">AO</span><b>SSAO</b> (Contact Shadows)</p>
+        <p><span class="tag">LIGHT</span><b>Hybrid RectArea</b> (Softbox Setup)</p>
+        <p style="margin-top: 8px; color: #666;">* Model is auto-rotating to demonstrate shadow tracking</p>
+        <div style="margin-top:8px;">
+            <button id="uploadBtn">上传GLB</button>
+            <input id="fileInput" type="file" accept=".glb,model/gltf-binary" style="display:none" />
+        </div>
+    </div>
+    <div id="canvas-container"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ==========================================
+// 1. 渲染核心配置
+// ==========================================
+const renderer = new THREE.WebGLRenderer({ 
+    powerPreference: "high-performance",
+    alpha: true, // 允许背景透明，透出 CSS 渐变
+    stencil: true,
+    depth: true,
+    antialias: false // 依赖后处理或高分屏
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+// renderer.shadowMap.enabled = false; // 关闭昂贵的实时阴影
+// renderer.useLegacyLights = false;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+// renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+document.body.appendChild(renderer.domElement);
+RectAreaLightUniformsLib.init();
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(3, 2, 5);
+
+// ==========================================
+// 2. 动态阴影系统 (Smart Blob Shadow)
+// ==========================================
+function createSoftShadowTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    
+    // 创建更加柔和、自然的非线性渐变
+    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0.0, 'rgba(0, 0, 0, 0.8)');  // 中心最黑
+    gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.3)');  // 中间过渡
+    gradient.addColorStop(0.8, 'rgba(0, 0, 0, 0.05)'); // 边缘极淡
+    gradient.addColorStop(1.0, 'rgba(0, 0, 0, 0)');    // 完全透明
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(canvas);
+}
+
+const shadowTexture = createSoftShadowTexture();
+const shadowMat = new THREE.MeshBasicMaterial({
+    map: shadowTexture,
+    transparent: true,
+    depthWrite: false, // 关键：不遮挡模型
+    color: 0x000000,
+    opacity: 0.6
+});
+const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), shadowMat);
+shadowPlane.rotation.x = -Math.PI / 2;
+shadowPlane.position.y = 0.01; // 紧贴地面
+// scene.add(shadowPlane);
+
+// 地面网格 (视觉参照)
+// const gridHelper = new THREE.GridHelper(20, 40, 0x666666, 0x333333);
+// gridHelper.material.opacity = 0.1;
+// gridHelper.material.transparent = true;
+// scene.add(gridHelper);
+
+// ==========================================
+// 3. 灯光环境 (Studio Setup)
+// ==========================================
+new RGBELoader()
+    .setPath('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/')
+    .load('royal_esplanade_1k.hdr', function (texture) {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        scene.environment = texture;
+        scene.environmentIntensity = 1.0;
+    });
+
+// 主光 (Key)
+const keyLight = new THREE.RectAreaLight(0xffffff, 3.0, 4, 4);
+keyLight.position.set(3, 4, 3);
+keyLight.lookAt(0, 0, 0);
+scene.add(keyLight);
+
+// 轮廓光 (Rim)
+const rimLight = new THREE.RectAreaLight(0x4c8bf5, 5.0, 3, 3);
+rimLight.position.set(-3, 2, -4);
+rimLight.lookAt(0, 1, 0);
+scene.add(rimLight);
+
+// 补光 (Fill)
+const fillLight = new THREE.RectAreaLight(0xffeedd, 1.5, 5, 5);
+fillLight.position.set(-4, 0, 4);
+fillLight.lookAt(0, 0, 0);
+scene.add(fillLight);
+
+let modelRadius = 1.5;
+let modelSizeY = 1.0;
+
+function configureLights(radius, sizeY) {
+    modelRadius = radius;
+    modelSizeY = sizeY;
+    keyLight.width = radius * 2.4;
+    keyLight.height = radius * 2.4;
+    rimLight.width = radius * 2.0;
+    rimLight.height = radius * 2.0;
+    fillLight.width = radius * 2.6;
+    fillLight.height = radius * 2.6;
+    const s = 1 + radius * 0.2;
+    keyLight.intensity = 2.6 * s;
+    rimLight.intensity = 4.0 * s;
+    fillLight.intensity = 1.4 * s;
+}
+
+function positionLights(center) {
+    keyLight.position.set(center.x + modelRadius * 1.6, center.y + modelSizeY * 0.8, center.z + modelRadius * 1.6);
+    keyLight.lookAt(center.x, center.y, center.z);
+    rimLight.position.set(center.x - modelRadius * 1.6, center.y + modelSizeY * 0.6, center.z - modelRadius * 2.0);
+    rimLight.lookAt(center.x, center.y, center.z);
+    fillLight.position.set(center.x - modelRadius * 1.2, center.y + modelSizeY * 0.2, center.z + modelRadius * 1.2);
+    fillLight.lookAt(center.x, center.y, center.z);
+}
+
+// ==========================================
+// 4. 后处理 (SSAO + ToneMapping)
+// ==========================================
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+const ssaoPass = new SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
+ssaoPass.kernelRadius = 4;
+ssaoPass.minDistance = 0.005;
+ssaoPass.maxDistance = 0.1;
+composer.addPass(ssaoPass);
+
+const outputPass = new OutputPass();
+composer.addPass(outputPass);
+
+// ==========================================
+// 5. 模型加载与逻辑
+// ==========================================
+let activeModel = null; // 存储当前模型引用
+let modelBaseY = 0;     // 记录模型落地时的Y坐标
+let shadowBaseScale = 1; // 记录阴影的基础大小
+
+const loader = new GLTFLoader();
+const draco = new DRACOLoader();
+draco.setDecoderPath('https://unpkg.com/three@0.158.0/examples/jsm/libs/draco/');
+loader.setDRACOLoader(draco);
+
+function disposeObject(obj) {
+    obj.traverse(child => {
+        if (child.isMesh) {
+            if (child.geometry) child.geometry.dispose();
+            const m = child.material;
+            if (Array.isArray(m)) m.forEach(x => x && x.dispose());
+            else if (m) m.dispose();
+        }
+    });
+}
+
+function applyModel(model) {
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const scale = 1.0 / Math.max(size.x, size.y, size.z);
+    model.scale.setScalar(scale);
+    model.position.x = -center.x * scale;
+    model.position.z = -center.z * scale;
+    modelBaseY = -box.min.y * scale;
+    model.position.y = modelBaseY + 0.2;
+    shadowBaseScale = Math.max(size.x, size.z) * scale * 1.5;
+    shadowPlane.scale.setScalar(shadowBaseScale);
+    const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+    model.traverse(child => {
+        if (child.isMesh) {
+            child.castShadow = false;
+            child.receiveShadow = false;
+            if (child.material && child.material.map) child.material.map.anisotropy = maxAnisotropy;
+            if (child.material) child.material.envMapIntensity = 1.0;
+            if (!child.geometry.attributes.normal) {
+                child.geometry.computeVertexNormals();
+            }
+            if (child.material) child.material.needsUpdate = true;
+        }
+    });
+    if (activeModel) {
+        scene.remove(activeModel);
+        disposeObject(activeModel);
+    }
+    scene.add(model);
+    activeModel = model;
+    const finalBox = new THREE.Box3().setFromObject(model);
+    const finalSize = finalBox.getSize(new THREE.Vector3());
+    const finalCenter = finalBox.getCenter(new THREE.Vector3());
+    const radius = Math.max(finalSize.x, finalSize.y, finalSize.z) / 2;
+    configureLights(radius, finalSize.y);
+    positionLights(finalCenter);
+}
+
+loader.load('./demo/glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb', (gltf) => {
+    applyModel(gltf.scene);
+}, undefined, console.error);
+
+const uploadBtn = document.getElementById('uploadBtn');
+const fileInput = document.getElementById('fileInput');
+if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async (e) => {
+        const input = e.target;
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const buffer = await file.arrayBuffer();
+        loader.parse(buffer, '', (gltf) => {
+            applyModel(gltf.scene);
+        }, console.error);
+    });
+}
+
+// ==========================================
+// 6. 动画与追踪循环
+// ==========================================
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.autoRotate = true; // 开启自动旋转，演示动态阴影
+controls.autoRotateSpeed = 2.0;
+
+const clock = new THREE.Clock();
+
+function animate() {
+    requestAnimationFrame(animate);
+    const time = clock.getElapsedTime();
+
+    // --- 核心逻辑：阴影追踪 ---
+    if (activeModel) {
+        // 1. 模拟模型浮动 (Idle Animation)
+        // 这里让模型上下浮动，演示阴影的动态变化
+        const floatOffset = Math.sin(time * 2) * 0.1;
+        activeModel.position.y = (modelBaseY + 0.2) + floatOffset;
+
+        // 2. 阴影跟随 X/Z
+        shadowPlane.position.x = activeModel.position.x;
+        shadowPlane.position.z = activeModel.position.z;
+
+        // 3. 阴影根据高度变化
+        // 计算模型底部距离地面的高度
+        const distToFloor = activeModel.position.y - modelBaseY;
+        
+        // 高度越高，透明度越低 (0.6 -> 0)
+        const opacity = THREE.MathUtils.clamp(0.6 - distToFloor * 0.8, 0, 0.8);
+        shadowMat.opacity = opacity;
+
+        // 高度越高，阴影越扩散 (Scale 变大)
+        const scaleFactor = 1 + distToFloor * 1.5;
+        shadowPlane.scale.setScalar(shadowBaseScale * scaleFactor);
+
+        const centerNow = new THREE.Vector3(
+            activeModel.position.x,
+            activeModel.position.y + modelSizeY * 0.5,
+            activeModel.position.z
+        );
+        positionLights(centerNow);
+    }
+
+    controls.update();
+    composer.render();
+}
+
+window.addEventListener('resize', () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    composer.setSize(w, h);
+    ssaoPass.setSize(w, h);
+});
+
+animate();
+</script>
+</body>
+</html>

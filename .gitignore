@@ -16,3 +16,6 @@ lib
 temp
 api
 www
+
+.gemini/
+gha-creds-*.json
