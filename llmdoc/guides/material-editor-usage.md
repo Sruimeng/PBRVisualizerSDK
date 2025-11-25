@@ -2,30 +2,36 @@
 
 ## 概述
 
-材质编辑器是PBR Visualizer SDK提供的专业级材质编辑工具，提供完整的PBR材质参数实时调节和预览功能。本指南将详细介绍如何使用材质编辑器创建和编辑各种PBR材质。
+材质编辑器是PBR Visualizer SDK提供的专业级材质编辑工具，采用模块化TypeScript架构，提供完整的PBR材质参数实时调节和预览功能。本指南将详细介绍如何使用新的模块化材质编辑器创建和编辑各种PBR材质。
 
 ## 快速开始
 
-### 1. 启动材质编辑器
+### 1. 导入材质编辑器
 
 ```typescript
-import { MaterialEditorDemo } from './demo/html/material-editor/sdk-simple';
+import { MaterialEditor } from './src/demo/sdk-simple';
 
-// 初始化材质编辑器
-const editor = new MaterialEditorDemo({
-    container: document.getElementById('material-editor'),
-    modelSource: './models/sample.glb'
-});
-
-await editor.initialize();
+// 创建材质编辑器实例
+const editor = new MaterialEditor();
 ```
 
-### 2. 基本操作
+### 2. 独立初始化
 
-材质编辑器提供了直观的三栏布局：
-- **左侧工具栏**: 工具选择和视图控制
-- **右侧属性面板**: 材质参数调节
-- **底部性能面板**: 实时性能监控
+材质编辑器现已完全独立，支持自动初始化：
+
+```typescript
+// 材质编辑器会在构造函数中自动初始化
+// 无需手动调用initialize()方法
+const editor = new MaterialEditor();
+```
+
+### 3. 基本操作
+
+材质编辑器提供模块化的参数控制：
+- **颜色控制**: 通过HTML input元素控制材质颜色
+- **滑块控制**: 金属度、粗糙度、环境贴图强度的实时调节
+- **预设应用**: 6种内置预设的快速应用
+- **错误处理**: 完善的错误处理和调试信息
 
 ## 材质参数详解
 
@@ -123,41 +129,109 @@ editor.updateMaterial({
 
 ### 内置预设
 
-材质编辑器提供6种预设材质，点击即可快速应用：
+材质编辑器提供6种预设材质，支持快速应用：
 
 ```typescript
-// 获取所有预设
-const presets = editor.getPresets();
-
-// 应用预设
-editor.applyPreset('metal');      // 金属
-editor.applyPreset('plastic');    // 塑料
-editor.applyPreset('wood');       // 木材
-editor.applyPreset('glass');      // 玻璃
-editor.applyPreset('fabric');     // 织物
-editor.applyPreset('ceramic');    // 陶瓷
+// 全局函数（已绑定到window对象）
+applyPreset('metal');      // 金属
+applyPreset('plastic');    // 塑料
+applyPreset('wood');       // 木材
+applyPreset('glass');      // 玻璃
+applyPreset('fabric');     // 织物
+applyPreset('ceramic');    // 陶瓷
 ```
 
-### 自定义预设
+### 预设配置详情
 
 ```typescript
-// 创建自定义预设
-const customPreset = {
-    name: '自定义材质',
-    params: {
-        color: '#ff6b6b',
-        metalness: 0.3,
-        roughness: 0.4,
-        clearcoat: 0.2,
-        transmission: 0.1
-    }
+// 预设配置定义
+const MATERIAL_PRESETS = {
+  metal: {
+    color: '#cccccc',
+    metalness: 1.0,
+    roughness: 0.2,
+    envMapIntensity: 1.5,
+  },
+  plastic: {
+    color: '#4a90e2',
+    metalness: 0.0,
+    roughness: 0.5,
+    envMapIntensity: 0.8,
+  },
+  glass: {
+    color: '#ffffff',
+    metalness: 0.0,
+    roughness: 0.0,
+    envMapIntensity: 1.0,
+  },
+  wood: {
+    color: '#8b4513',
+    metalness: 0.0,
+    roughness: 0.8,
+    envMapIntensity: 0.6,
+  },
+  ceramic: {
+    color: '#ffffff',
+    metalness: 0.0,
+    roughness: 0.1,
+    envMapIntensity: 1.2,
+  },
+  fabric: {
+    color: '#9b59b6',
+    metalness: 0.0,
+    roughness: 0.9,
+    envMapIntensity: 0.4,
+  },
 };
+```
 
-// 添加预设
-editor.addPreset(customPreset);
+## API接口
 
-// 应用自定义预设
-editor.applyPreset('自定义材质');
+### MaterialEditor类
+
+#### 构造函数
+```typescript
+constructor()
+// 自动初始化材质编辑器
+```
+
+#### 更新材质参数
+```typescript
+private updateMaterial(params: MaterialParams): Promise<void>
+// MaterialParams类型定义：
+interface MaterialParams {
+  color?: string | Color;
+  metalness?: number;
+  roughness?: number;
+  envMapIntensity?: number;
+}
+```
+
+#### 预设应用
+```typescript
+public applyPreset(presetName: string): Promise<void>
+// 应用预设并同步UI
+```
+
+#### 重置材质
+```typescript
+public resetMaterial(): Promise<void>
+// 重置到默认材质状态
+```
+
+#### 随机材质
+```typescript
+public randomizeMaterial(): Promise<void>
+// 生成随机材质参数
+```
+
+### 全局函数（已绑定到window对象）
+
+```typescript
+// 全局函数可直接在HTML中使用
+window.applyPreset('metal');
+window.resetMaterial();
+window.randomizeMaterial();
 ```
 
 ## 性能优化
@@ -168,13 +242,8 @@ editor.applyPreset('自定义材质');
 
 ```typescript
 // 获取当前性能状态
-const performance = editor.getPerformanceStats();
+const performance = editor.visualizer.getPerformanceStats();
 console.log(`FPS: ${performance.fps}, Draw Calls: ${performance.drawCalls}`);
-
-// 手动调整质量
-editor.setQualityLevel('high');    // 高质量
-editor.setQualityLevel('medium');  // 中等质量
-editor.setQualityLevel('low');     // 低质量
 ```
 
 ### 材质优化建议
@@ -191,51 +260,113 @@ editor.setQualityLevel('low');     // 低质量
 
 ## 实用功能
 
-### 材质导出
+### 材质配置导出
 
 ```typescript
-// 导出当前材质配置
-const materialConfig = editor.exportMaterial();
+// 通过visualizer获取材质配置
+const materialConfig = editor.visualizer.getModelState('demo_sphere');
 console.log(materialConfig);
 
 // 导出为JSON文件
-exportToJSON(materialConfig, 'material-config.json');
+function exportToJSON(config: any, filename: string) {
+    const dataStr = JSON.stringify(config, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    // 创建下载链接...
+}
 ```
 
-### 截图功能
+### 错误处理
+
+材质编辑器包含完善的错误处理：
 
 ```typescript
-// 保存当前渲染画面
-editor.captureScreenshot('material-preview.png');
+try {
+    await editor.applyPreset('metal');
+} catch (error) {
+    console.error('材质预设应用失败:', error);
+    // 错误信息会自动显示在控制台
+}
 ```
 
-### 性能监控
+### 调试信息
+
+材质编辑器提供详细的调试信息：
 
 ```typescript
-// 监听性能变化
-editor.on('performanceUpdate', (stats) => {
-    console.log('性能统计:', stats);
-    // 可以根据性能数据动态调整渲染设置
-});
+// 控制台输出示例
+[MaterialEditor] Updating material for model: demo_sphere
+[MaterialEditor] { color: '#cccccc', metalness: 1.0, roughness: 0.2 }
+[MaterialEditor] Material update completed successfully
+```
 
-// 获取详细性能信息
-const detailedStats = editor.getDetailedPerformance();
-console.log(detailedStats);
+## HTML集成示例
+
+### 基础HTML结构
+
+```html
+<div id="app">
+    <!-- 材质编辑器控件 -->
+    <div class="material-editor">
+        <div class="control-group">
+            <label for="color">颜色:</label>
+            <input type="color" id="color" value="#ffffff">
+        </div>
+
+        <div class="control-group">
+            <label for="metalness">金属度:</label>
+            <input type="range" id="metalness" min="0" max="1" step="0.01" value="0.5">
+            <span id="metalness-value">0.50</span>
+        </div>
+
+        <div class="control-group">
+            <label for="roughness">粗糙度:</label>
+            <input type="range" id="roughness" min="0" max="1" step="0.01" value="0.5">
+            <span id="roughness-value">0.50</span>
+        </div>
+
+        <div class="control-group">
+            <label for="envMapIntensity">环境强度:</label>
+            <input type="range" id="envMapIntensity" min="0" max="2" step="0.01" value="1.0">
+            <span id="envMapIntensity-value">1.00</span>
+        </div>
+
+        <div class="preset-buttons">
+            <button onclick="applyPreset('metal')">金属</button>
+            <button onclick="applyPreset('plastic')">塑料</button>
+            <button onclick="applyPreset('wood')">木材</button>
+            <button onclick="applyPreset('glass')">玻璃</button>
+            <button onclick="applyPreset('ceramic')">陶瓷</button>
+            <button onclick="applyPreset('fabric')">织物</button>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="resetMaterial()">重置</button>
+            <button onclick="randomizeMaterial()">随机</button>
+        </div>
+    </div>
+</div>
+```
+
+### 初始化脚本
+
+```typescript
+// 自动初始化
+const editor = new MaterialEditor();
 ```
 
 ## 常见问题
 
 ### Q: 材质调节没有反应？
-A: 确保已选择材质编辑工具，检查模型是否正确加载。
+A: 确保HTML控件ID正确，检查控制台错误信息。材质编辑器会自动处理参数转换和验证。
 
 ### Q: 性能太低怎么办？
-A: 切换到低质量模式，关闭部分后处理效果，或降低环境贴图分辨率。
+A: 切换到低质量模式，关闭部分后处理效果，或降低环境贴图分辨率。检查控制台性能统计信息。
 
 ### Q: 如何保存自定义材质？
-A: 使用导出功能保存材质配置为JSON文件。
+A: 通过visualizer.getModelState()获取当前材质配置，然后导出为JSON文件。
 
 ### Q: 材质预设不够用？
-A: 可以通过API添加自定义材质预设。
+A: 可以在sdk-simple.ts中扩展MATERIAL_PRESETS对象，添加自定义预设。
 
 ## 最佳实践
 
@@ -250,9 +381,14 @@ A: 可以通过API添加自定义材质预设。
    - 根据设备性能调整设置
    - 合理使用高级材质特性
 
-3. **材质库管理**:
-   - 建立材质分类系统
-   - 定期整理预设
-   - 文档化材质参数
+3. **代码组织**:
+   - 利用模块化设计
+   - 使用TypeScript类型检查
+   - 遵循错误处理最佳实践
 
-材质编辑器提供了强大的材质编辑能力，通过合理使用这些功能，可以快速创建出高质量的PBR材质。
+4. **调试技巧**:
+   - 查看控制台调试信息
+   - 使用材质预设进行快速测试
+   - 利用性能监控工具
+
+材质编辑器通过模块化TypeScript架构、完整的类型安全和完善的错误处理，为产品可视化提供了专业级的材质编辑能力。

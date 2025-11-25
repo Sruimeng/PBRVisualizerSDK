@@ -60,8 +60,9 @@
 ### 状态管理流程
 1. **事务创建**: `PBRVisualizer:459-477` - 生成状态快照
 2. **批量更新**: `PBRVisualizer:483-503` - 多模型统一更新
-3. **应用状态**: `PBRVisualizer:559-568` - 全局和模型状态应用
-4. **撤销重做**: `PBRVisualizer:527-554` - 事务历史管理
+3. **材质更新**: `PBRVisualizer:466-472` - 先更新MaterialSystem配置，再应用到模型
+4. **应用状态**: `PBRVisualizer:559-568` - 全局和模型状态应用
+5. **撤销重做**: `PBRVisualizer:527-554` - 事务历史管理
 
 ## 4. 系统交互关系
 
@@ -84,7 +85,7 @@
 ### 关键接口设计
 - **环境系统**: `EnvironmentSystem.setEnvironment()` → 场景环境配置
 - **灯光系统**: `LightSystem.createStudioLighting()` → 自动布光生成
-- **材质系统**: `MaterialSystem.applyMaterialUpdates()` → 动态材质更新
+- **材质系统**: `MaterialSystem.updateMaterial()` → 材质配置更新，支持自动创建
 - **后处理系统**: `PostProcessSystem.render()` → 渲染管线输出
 
 ## 5. 设计原则

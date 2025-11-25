@@ -145,30 +145,40 @@ export class MaterialSystem {
      * 更新材质参数
      */
     public updateMaterial(id: string, updates: Partial<MaterialState>): void {
-        const config = this.materialConfigs.get(id);
+        let config = this.materialConfigs.get(id);
+
+        // 如果配置不存在，创建一个默认配置
         if (!config) {
-            console.warn(`Material config for '${id}' not found`);
-            return;
+            console.log(`[MaterialSystem] Creating new material config for '${id}'`);
+            config = {
+                color: '#ffffff',
+                metalness: 0.5,
+                roughness: 0.5,
+                envMapIntensity: 1.0,
+            };
         }
 
         // 更新配置
         const newConfig = { ...config, ...updates };
         this.materialConfigs.set(id, newConfig);
 
-        // 查找使用该材质的对象并更新
-        // 注意：这里需要配合场景遍历来更新实际的材质
-        console.log(`Updated material config for: ${id}`, updates);
+        console.log(`[MaterialSystem] Updated material config for: ${id}`, newConfig);
     }
 
     /**
      * 应用材质更新到对象
      */
     public applyMaterialUpdates(object: THREE.Object3D, materialId?: string): void {
-        if (!materialId) return;
+        if (!materialId) {
+            console.warn('[MaterialSystem] No materialId provided for applyMaterialUpdates');
+            return;
+        }
 
         const config = this.materialConfigs.get(materialId);
-        if (!config) return;
-
+        if (!config) {
+            console.warn(`[MaterialSystem] No material config found for id: ${materialId}. Available configs:`, Array.from(this.materialConfigs.keys()));
+            return;
+        }
         object.traverse((child) => {
             if (child instanceof THREE.Mesh && child.material) {
                 const material = child.material as THREE.MeshStandardMaterial;

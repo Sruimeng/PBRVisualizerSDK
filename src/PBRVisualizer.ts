@@ -465,6 +465,9 @@ export class PBRVisualizer {
 
         // 更新材质
         if (state.material) {
+            // 首先更新材质配置
+            this.materialSystem.updateMaterial(modelId, state.material);
+            // 然后应用到模型
             this.materialSystem.applyMaterialUpdates(model, modelId);
         }
 

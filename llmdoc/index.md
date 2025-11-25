@@ -20,6 +20,7 @@
 - PBRVisualizer统一门面设计（728行）
 - WebGL渲染器配置和性能监控
 - 渲染循环管理和场景图管理
+- 材质状态管理和事务系统集成
 
 **[状态管理架构](architecture/state-management.md)** - 事务系统和多模型状态
 - 基于事务模式的分层状态管理
@@ -30,6 +31,8 @@
 - 基于物理的材质渲染引擎
 - 材质缓存和纹理管理系统
 - 内置材质预设（金属、塑料、木材、玻璃、织物）
+- 自动材质配置创建和增量更新
+- 独立的MaterialEditor材质编辑器类
 
 ## 📖 操作指南 (Guides)
 
@@ -87,22 +90,25 @@
 - 事务历史管理
 - 状态系统优化
 
-**[材质和光照配置](guides/material-and-lighting-configuration.md)** - PBR材质和高级光照设置
-- PBR材质参数详解
-- Studio三点布光系统
-- 材质预设应用
-- 材质编辑器集成
-
 **[PBR材质创建工作流](guides/pbr-material-creation-workflow.md)** - 材质创建、配置和优化指南
 - 材质创建流程
 - 纹理映射配置
 - 材质性能优化
 
-**[材质和光照配置](guides/material-and-lighting-configuration.md)** - PBR材质和高级光照设置
-- PBR材质参数详解
-- Studio三点布光系统
-- 材质预设应用
-- 材质编辑器集成
+**[PBR材质优化和缓存](guides/pbr-material-optimization-and-caching.md)** - 材质性能优化和缓存策略
+- 材质性能优化技术
+- 缓存机制和内存管理
+- 渲染质量调节
+
+**[基础使用指南](guides/basic-usage.md)** - SDK基础使用方法
+- 基本API使用方法
+- 常见操作流程
+- 错误处理和调试
+
+**[SDK设置指南](guides/sdk-setup.md)** - SDK开发环境设置
+- 开发环境配置
+- 项目结构说明
+- 构建和部署流程
 
 ## 📚 参考资料 (Reference)
 
@@ -142,11 +148,6 @@
 - 提交信息格式
 - 分支管理策略
 - 代码审查流程
-
-**[配置文件](reference/configuration-files.md)** - 构建和开发工具配置
-- TypeScript配置详解
-- 构建工具配置（Vite + Rollup）
-- 代码质量工具配置
 
 **[示例](reference/examples.md)** - 完整的使用示例和最佳实践
 - 完整使用示例
