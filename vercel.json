@@ -2,7 +2,8 @@
   "buildCommand": "pnpm vite build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/demo", "destination": "/demo/index.html" },
-    { "source": "/demo/ai_studio_code.html", "destination": "/demo/html/ai_studio_code.html" }
+    { "source": "/demo", "destination": "/demo/html/material-editor/sdk-simple.html" },
+    { "source": "/demo/ai_studio_code.html", "destination": "/demo/html/ai_studio_code.html" },
+    { "source": "/demo/sdk-simple.html", "destination": "/demo/html/material-editor/sdk-simple.html" }
   ]
 }

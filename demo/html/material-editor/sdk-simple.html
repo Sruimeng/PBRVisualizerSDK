@@ -1,494 +1,502 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PBR Visualizer SDK - 简单材质编辑Demo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            overflow: hidden;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0a0a0a;
+        color: #ffffff;
+        overflow: hidden;
+      }
 
-        #app {
-            width: 100vw;
-            height: 100vh;
-        }
+      #app {
+        width: 100vw;
+        height: 100vh;
+      }
 
-        /* 控制面板 */
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 320px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 20px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+      /* 控制面板 */
+      .controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 320px;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 20px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
 
-        .controls h2 {
-            margin-bottom: 20px;
-            color: #4af;
-            font-size: 16px;
-        }
+      .controls h2 {
+        margin-bottom: 20px;
+        color: #4af;
+        font-size: 16px;
+      }
 
-        .control-group {
-            margin-bottom: 25px;
-        }
+      .control-group {
+        margin-bottom: 25px;
+      }
 
-        .control-group h3 {
-            margin-bottom: 15px;
-            color: #ccc;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 5px;
-        }
+      .control-group h3 {
+        margin-bottom: 15px;
+        color: #ccc;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 5px;
+      }
 
-        .control {
-            margin-bottom: 15px;
-        }
+      .control {
+        margin-bottom: 15px;
+      }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 12px;
-            color: #aaa;
-        }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 12px;
+        color: #aaa;
+      }
 
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            outline: none;
-            -webkit-appearance: none;
-        }
+      input[type='range'] {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        outline: none;
+        -webkit-appearance: none;
+      }
 
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #4af;
-            border-radius: 50%;
-            cursor: pointer;
-        }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #4af;
+        border-radius: 50%;
+        cursor: pointer;
+      }
 
-        input[type="color"] {
-            width: 100%;
-            height: 40px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+      input[type='color'] {
+        width: 100%;
+        height: 40px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
 
-        .value {
-            display: inline-block;
-            margin-left: 10px;
-            font-size: 12px;
-            color: #4af;
-        }
+      .value {
+        display: inline-block;
+        margin-left: 10px;
+        font-size: 12px;
+        color: #4af;
+      }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
 
-        button:hover {
-            background: rgba(68, 170, 255, 0.2);
-            border-color: #4af;
-        }
+      button:hover {
+        background: rgba(68, 170, 255, 0.2);
+        border-color: #4af;
+      }
 
-        /* 预设按钮组 */
-        .presets {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
+      /* 预设按钮组 */
+      .presets {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+      }
 
-        .preset-btn {
-            padding: 8px;
-            font-size: 12px;
-        }
+      .preset-btn {
+        padding: 8px;
+        font-size: 12px;
+      }
 
-        /* 加载提示 */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 1000;
-        }
+      /* 加载提示 */
+      .loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 1000;
+      }
 
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            margin: 0 auto;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #4af;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #4af;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
 
-        .loading-text {
-            margin-top: 15px;
-            font-size: 14px;
-            color: #888;
-        }
+      .loading-text {
+        margin-top: 15px;
+        font-size: 14px;
+        color: #888;
+      }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
+      }
 
-        .error {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            border-radius: 8px;
-            padding: 20px;
-            max-width: 500px;
-            z-index: 1000;
-        }
+      .error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 0, 0, 0.1);
+        border: 1px solid rgba(255, 0, 0, 0.3);
+        border-radius: 8px;
+        padding: 20px;
+        max-width: 500px;
+        z-index: 1000;
+      }
 
-        .error h3 {
-            color: #ff4444;
-            margin-bottom: 10px;
-        }
+      .error h3 {
+        color: #ff4444;
+        margin-bottom: 10px;
+      }
 
-        .error p {
-            font-size: 14px;
-            color: #ccc;
-            line-height: 1.5;
-        }
+      .error p {
+        font-size: 14px;
+        color: #ccc;
+        line-height: 1.5;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="app"></div>
 
     <!-- 加载提示 -->
     <div class="loading" id="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">正在初始化SDK...</div>
+      <div class="loading-spinner"></div>
+      <div class="loading-text">正在初始化SDK...</div>
     </div>
 
     <!-- 控制面板 -->
-    <div class="controls" style="display: none;" id="controls">
-        <h2>材质参数编辑器</h2>
+    <div class="controls" style="display: none" id="controls">
+      <h2>材质参数编辑器</h2>
 
-        <!-- 基础参数 -->
-        <div class="control-group">
-            <h3>基础属性</h3>
+      <!-- 基础参数 -->
+      <div class="control-group">
+        <h3>基础属性</h3>
 
-            <div class="control">
-                <label>颜色</label>
-                <input type="color" id="color" value="#ffffff">
-            </div>
-
-            <div class="control">
-                <label>金属度 <span class="value" id="metalness-value">0.5</span></label>
-                <input type="range" id="metalness" min="0" max="1" step="0.01" value="0.5">
-            </div>
-
-            <div class="control">
-                <label>粗糙度 <span class="value" id="roughness-value">0.5</span></label>
-                <input type="range" id="roughness" min="0" max="1" step="0.01" value="0.5">
-            </div>
-
-            <div class="control">
-                <label>环境强度 <span class="value" id="envMapIntensity-value">1.0</span></label>
-                <input type="range" id="envMapIntensity" min="0" max="2" step="0.01" value="1.0">
-            </div>
+        <div class="control">
+          <label>颜色</label>
+          <input type="color" id="color" value="#ffffff" />
         </div>
 
-        <!-- 预设 -->
-        <div class="control-group">
-            <h3>材质预设</h3>
-            <div class="presets">
-                <button class="preset-btn" onclick="applyPreset('metal')">金属</button>
-                <button class="preset-btn" onclick="applyPreset('plastic')">塑料</button>
-                <button class="preset-btn" onclick="applyPreset('glass')">玻璃</button>
-                <button class="preset-btn" onclick="applyPreset('wood')">木材</button>
-                <button class="preset-btn" onclick="applyPreset('ceramic')">陶瓷</button>
-                <button class="preset-btn" onclick="applyPreset('fabric')">织物</button>
-            </div>
+        <div class="control">
+          <label>金属度 <span class="value" id="metalness-value">0.5</span></label>
+          <input type="range" id="metalness" min="0" max="1" step="0.01" value="0.5" />
         </div>
 
-        <!-- 操作 -->
-        <div class="control-group">
-            <h3>操作</h3>
-            <button onclick="resetMaterial()">重置材质</button>
-            <button onclick="randomizeMaterial()">随机材质</button>
+        <div class="control">
+          <label>粗糙度 <span class="value" id="roughness-value">0.5</span></label>
+          <input type="range" id="roughness" min="0" max="1" step="0.01" value="0.5" />
         </div>
+
+        <div class="control">
+          <label>环境强度 <span class="value" id="envMapIntensity-value">1.0</span></label>
+          <input type="range" id="envMapIntensity" min="0" max="2" step="0.01" value="1.0" />
+        </div>
+      </div>
+
+      <!-- 预设 -->
+      <div class="control-group">
+        <h3>材质预设</h3>
+        <div class="presets">
+          <button class="preset-btn" onclick="applyPreset('metal')">金属</button>
+          <button class="preset-btn" onclick="applyPreset('plastic')">塑料</button>
+          <button class="preset-btn" onclick="applyPreset('glass')">玻璃</button>
+          <button class="preset-btn" onclick="applyPreset('wood')">木材</button>
+          <button class="preset-btn" onclick="applyPreset('ceramic')">陶瓷</button>
+          <button class="preset-btn" onclick="applyPreset('fabric')">织物</button>
+        </div>
+      </div>
+
+      <!-- 操作 -->
+      <div class="control-group">
+        <h3>操作</h3>
+        <button onclick="resetMaterial()">重置材质</button>
+        <button onclick="randomizeMaterial()">随机材质</button>
+      </div>
     </div>
 
     <script type="importmap">
-    {
+      {
         "imports": {
-            "three": "https://unpkg.com/three@0.181.2/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.181.2/examples/jsm/"
+          "three": "https://unpkg.com/three@0.181.2/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.181.2/examples/jsm/"
         }
-    }
+      }
     </script>
 
     <script type="module">
-        import { PBRVisualizer } from '../../../dist/index.mjs';
-        import { Vector3, Color } from 'three';
+      import { PBRVisualizer } from '../../../dist/index.mjs';
+      import { Vector3, Color } from 'three';
 
-        let visualizer;
-        const MODEL_ID = 'demo_sphere';
+      let visualizer;
+      const MODEL_ID = 'demo_sphere';
 
-        // 材质预设
-        const presets = {
-            metal: {
-                color: '#cccccc',
-                metalness: 1.0,
-                roughness: 0.2,
-                envMapIntensity: 1.5
+      // 材质预设
+      const presets = {
+        metal: {
+          color: '#cccccc',
+          metalness: 1.0,
+          roughness: 0.2,
+          envMapIntensity: 1.5,
+        },
+        plastic: {
+          color: '#4a90e2',
+          metalness: 0.0,
+          roughness: 0.5,
+          envMapIntensity: 0.8,
+        },
+        glass: {
+          color: '#ffffff',
+          metalness: 0.0,
+          roughness: 0.0,
+          envMapIntensity: 1.0,
+        },
+        wood: {
+          color: '#8b4513',
+          metalness: 0.0,
+          roughness: 0.8,
+          envMapIntensity: 0.6,
+        },
+        ceramic: {
+          color: '#ffffff',
+          metalness: 0.0,
+          roughness: 0.1,
+          envMapIntensity: 1.2,
+        },
+        fabric: {
+          color: '#9b59b6',
+          metalness: 0.0,
+          roughness: 0.9,
+          envMapIntensity: 0.4,
+        },
+      };
+
+      // 初始化
+      async function init() {
+        try {
+          // 创建PBR Visualizer实例
+          visualizer = new PBRVisualizer({
+            container: document.getElementById('app'),
+            models: [
+              {
+                id: MODEL_ID,
+                source:
+                  '../../glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb',
+              },
+            ],
+            initialGlobalState: {
+              environment: {
+                intensity: 1.0,
+                url: 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_03_1k.hdr',
+              },
+              sceneSettings: {
+                background: new Color(0x1a1a1a),
+                exposure: 1.0,
+              },
+              camera: {
+                position: new Vector3(2, 2, 5),
+                target: new Vector3(0, 0, 0),
+                fov: 50,
+                near: 0.1,
+                far: 1000,
+                controls: {
+                  enabled: true,
+                  autoRotate: true,
+                  autoRotateSpeed: 2.0,
+                },
+              },
+              postProcessing: {
+                enabled: true,
+                toneMapping: {
+                  type: 5, // ACESFilmicToneMapping
+                  exposure: 1.0,
+                  whitePoint: 1.0,
+                },
+                bloom: {
+                  enabled: true,
+                  strength: 0.3,
+                  radius: 0.4,
+                  threshold: 0.8,
+                },
+                ssao: {
+                  enabled: false,
+                  kernelRadius: 4,
+                  minDistance: 0.005,
+                  maxDistance: 0.1,
+                },
+                antialiasing: {
+                  enabled: true,
+                  type: 'fxaa',
+                },
+              },
             },
-            plastic: {
-                color: '#4a90e2',
-                metalness: 0.0,
-                roughness: 0.5,
-                envMapIntensity: 0.8
-            },
-            glass: {
-                color: '#ffffff',
-                metalness: 0.0,
-                roughness: 0.0,
-                envMapIntensity: 1.0
-            },
-            wood: {
-                color: '#8b4513',
-                metalness: 0.0,
-                roughness: 0.8,
-                envMapIntensity: 0.6
-            },
-            ceramic: {
-                color: '#ffffff',
-                metalness: 0.0,
-                roughness: 0.1,
-                envMapIntensity: 1.2
-            },
-            fabric: {
-                color: '#9b59b6',
-                metalness: 0.0,
-                roughness: 0.9,
-                envMapIntensity: 0.4
-            }
-        };
+          });
 
-        // 初始化
-        async function init() {
-            try {
-                // 创建PBR Visualizer实例
-                visualizer = new PBRVisualizer({
-                    container: document.getElementById('app'),
-                    models: [{
-                        id: MODEL_ID,
-                        source: '../../glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb'
-                    }],
-                    initialGlobalState: {
-                        environment: {
-                            intensity: 1.0,
-                            url: 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_03_1k.hdr'
-                        },
-                        sceneSettings: {
-                            background: new Color(0x1a1a1a),
-                            exposure: 1.0
-                        },
-                        camera: {
-                            position: new Vector3(2, 2, 5),
-                            target: new Vector3(0, 0, 0),
-                            fov: 50,
-                            near: 0.1,
-                            far: 1000,
-                            controls: {
-                                enabled: true,
-                                autoRotate: true,
-                                autoRotateSpeed: 2.0
-                            }
-                        },
-                        postProcessing: {
-                            enabled: true,
-                            toneMapping: {
-                                type: 5, // ACESFilmicToneMapping
-                                exposure: 1.0,
-                                whitePoint: 1.0
-                            },
-                            bloom: {
-                                enabled: true,
-                                strength: 0.3,
-                                radius: 0.4,
-                                threshold: 0.8
-                            },
-                            ssao: {
-                                enabled: false,
-                                kernelRadius: 4,
-                                minDistance: 0.005,
-                                maxDistance: 0.1
-                            },
-                            antialiasing: {
-                                enabled: true,
-                                type: 'fxaa'
-                            }
-                        }
-                    }
-                });
+          // 初始化SDK
+          await visualizer.initialize();
 
-                // 初始化SDK
-                await visualizer.initialize();
+          // 加载模型(这里用一个默认球体URL,实际中可能需要用户提供)
+          try {
+            // 尝试加载模型文件
+            // await visualizer.loadModel(MODEL_ID, '/models/sphere.glb');
 
-                // 加载模型(这里用一个默认球体URL,实际中可能需要用户提供)
-                try {
-                    // 尝试加载模型文件
-                    // await visualizer.loadModel(MODEL_ID, '/models/sphere.glb');
+            // 由于模型文件可能不存在,我们直接让SDK创建一个默认场景
+            console.log('SDK initialized, ready to edit materials');
+          } catch (modelError) {
+            console.warn('Model loading skipped:', modelError);
+          }
 
-                    // 由于模型文件可能不存在,我们直接让SDK创建一个默认场景
-                    console.log('SDK initialized, ready to edit materials');
-                } catch (modelError) {
-                    console.warn('Model loading skipped:', modelError);
-                }
+          // 设置控制器
+          setupControls();
 
-                // 设置控制器
-                setupControls();
+          // 隐藏加载提示,显示控制面板
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('controls').style.display = 'block';
 
-                // 隐藏加载提示,显示控制面板
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('controls').style.display = 'block';
-
-                console.log('Material Editor initialized successfully');
-
-            } catch (error) {
-                console.error('Initialization failed:', error);
-                showError(error);
-            }
+          console.log('Material Editor initialized successfully');
+        } catch (error) {
+          console.error('Initialization failed:', error);
+          showError(error);
         }
+      }
 
-        // 设置控制器
-        function setupControls() {
-            // 颜色控制
-            document.getElementById('color').addEventListener('input', (e) => {
-                updateMaterial({ color: e.target.value });
-            });
+      // 设置控制器
+      function setupControls() {
+        // 颜色控制
+        document.getElementById('color').addEventListener('input', (e) => {
+          updateMaterial({ color: e.target.value });
+        });
 
-            // 滑块控制
-            ['metalness', 'roughness', 'envMapIntensity'].forEach(id => {
-                const slider = document.getElementById(id);
-                const valueSpan = document.getElementById(id + '-value');
+        // 滑块控制
+        ['metalness', 'roughness', 'envMapIntensity'].forEach((id) => {
+          const slider = document.getElementById(id);
+          const valueSpan = document.getElementById(id + '-value');
 
-                slider.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    valueSpan.textContent = value.toFixed(2);
-                    updateMaterial({ [id]: value });
-                });
-            });
+          slider.addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            valueSpan.textContent = value.toFixed(2);
+            updateMaterial({ [id]: value });
+          });
+        });
+      }
+
+      // 更新材质
+      async function updateMaterial(params) {
+        if (!visualizer) return;
+
+        try {
+          await visualizer.updateModel(MODEL_ID, {
+            material: params,
+          });
+        } catch (error) {
+          console.warn('Material update failed:', error);
         }
+      }
+
+      // 应用预设
+      window.applyPreset = async function (presetName) {
+        const preset = presets[presetName];
+        if (!preset) return;
+
+        // 更新UI
+        Object.entries(preset).forEach(([key, value]) => {
+          const input = document.getElementById(key);
+          if (input) {
+            input.value = value;
+            const valueSpan = document.getElementById(key + '-value');
+            if (valueSpan) {
+              valueSpan.textContent = typeof value === 'number' ? value.toFixed(2) : value;
+            }
+          }
+        });
 
         // 更新材质
-        async function updateMaterial(params) {
-            if (!visualizer) return;
+        await updateMaterial(preset);
+      };
 
-            try {
-                await visualizer.updateModel(MODEL_ID, {
-                    material: params
-                });
-            } catch (error) {
-                console.warn('Material update failed:', error);
+      // 重置材质
+      window.resetMaterial = async function () {
+        const defaults = {
+          color: '#ffffff',
+          metalness: 0.5,
+          roughness: 0.5,
+          envMapIntensity: 1.0,
+        };
+
+        Object.entries(defaults).forEach(([key, value]) => {
+          const input = document.getElementById(key);
+          if (input) {
+            input.value = value;
+            const valueSpan = document.getElementById(key + '-value');
+            if (valueSpan && typeof value === 'number') {
+              valueSpan.textContent = value.toFixed(2);
             }
-        }
+          }
+        });
 
-        // 应用预设
-        window.applyPreset = async function(presetName) {
-            const preset = presets[presetName];
-            if (!preset) return;
+        await updateMaterial(defaults);
+      };
 
-            // 更新UI
-            Object.entries(preset).forEach(([key, value]) => {
-                const input = document.getElementById(key);
-                if (input) {
-                    input.value = value;
-                    const valueSpan = document.getElementById(key + '-value');
-                    if (valueSpan) {
-                        valueSpan.textContent = typeof value === 'number' ? value.toFixed(2) : value;
-                    }
-                }
-            });
+      // 随机材质
+      window.randomizeMaterial = async function () {
+        const randomColor =
+          '#' +
+          Math.floor(Math.random() * 16777215)
+            .toString(16)
+            .padStart(6, '0');
+        const randomMetalness = Math.random();
+        const randomRoughness = Math.random();
 
-            // 更新材质
-            await updateMaterial(preset);
-        };
+        document.getElementById('color').value = randomColor;
+        document.getElementById('metalness').value = randomMetalness;
+        document.getElementById('roughness').value = randomRoughness;
+        document.getElementById('metalness-value').textContent = randomMetalness.toFixed(2);
+        document.getElementById('roughness-value').textContent = randomRoughness.toFixed(2);
 
-        // 重置材质
-        window.resetMaterial = async function() {
-            const defaults = {
-                color: '#ffffff',
-                metalness: 0.5,
-                roughness: 0.5,
-                envMapIntensity: 1.0
-            };
+        await updateMaterial({
+          color: randomColor,
+          metalness: randomMetalness,
+          roughness: randomRoughness,
+        });
+      };
 
-            Object.entries(defaults).forEach(([key, value]) => {
-                const input = document.getElementById(key);
-                if (input) {
-                    input.value = value;
-                    const valueSpan = document.getElementById(key + '-value');
-                    if (valueSpan && typeof value === 'number') {
-                        valueSpan.textContent = value.toFixed(2);
-                    }
-                }
-            });
-
-            await updateMaterial(defaults);
-        };
-
-        // 随机材质
-        window.randomizeMaterial = async function() {
-            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-            const randomMetalness = Math.random();
-            const randomRoughness = Math.random();
-
-            document.getElementById('color').value = randomColor;
-            document.getElementById('metalness').value = randomMetalness;
-            document.getElementById('roughness').value = randomRoughness;
-            document.getElementById('metalness-value').textContent = randomMetalness.toFixed(2);
-            document.getElementById('roughness-value').textContent = randomRoughness.toFixed(2);
-
-            await updateMaterial({
-                color: randomColor,
-                metalness: randomMetalness,
-                roughness: randomRoughness
-            });
-        };
-
-        // 显示错误
-        function showError(error) {
-            document.getElementById('loading').style.display = 'none';
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.innerHTML = `
+      // 显示错误
+      function showError(error) {
+        document.getElementById('loading').style.display = 'none';
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.innerHTML = `
                 <h3>初始化失败</h3>
                 <p>${error.message || error}</p>
                 <p style="margin-top: 10px; font-size: 12px;">
@@ -496,11 +504,11 @@
                 </p>
                 <button onclick="location.reload()">重新加载</button>
             `;
-            document.body.appendChild(errorDiv);
-        }
+        document.body.appendChild(errorDiv);
+      }
 
-        // 启动应用
-        init();
+      // 启动应用
+      init();
     </script>
-</body>
+  </body>
 </html>
