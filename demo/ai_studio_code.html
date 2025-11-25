@@ -137,18 +137,19 @@ shadowPlane.position.y = 0.01; // 紧贴地面
 // ==========================================
 // 3. 灯光环境 (Studio Setup)
 // ==========================================
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-				pmremGenerator.compileEquirectangularShader();
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+pmremGenerator.compileEquirectangularShader();
 
-				new RGBELoader()
-					.setPath('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/')
+new RGBELoader()
+    .setPath('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/')
     .load('royal_esplanade_1k.hdr', function (texture) {
-						const radianceMap =
-							pmremGenerator.fromEquirectangular(texture).texture;
-						pmremGenerator.dispose();
-						scene.background = radianceMap;
-						scene.environment = radianceMap;
-					});
+        texture.mapping = EquirectangularReflectionMapping;
+        const radianceMap =
+            pmremGenerator.fromEquirectangular(texture).texture;
+        pmremGenerator.dispose();
+        scene.background = radianceMap;
+        scene.environment = radianceMap;
+	});
 
 // 主光 (Key)
 const keyLight = new THREE.RectAreaLight(0xffffff, 3.0, 4, 4);
@@ -273,7 +274,7 @@ function applyModel(model) {
     positionLights(finalCenter);
 }
 
-loader.load('./demo/glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb', (gltf) => {
+loader.load('./glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb', (gltf) => {
     applyModel(gltf.scene);
 }, undefined, console.error);
 
@@ -297,8 +298,6 @@ if (uploadBtn && fileInput) {
 // ==========================================
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.autoRotate = true; // 开启自动旋转，演示动态阴影
-controls.autoRotateSpeed = 2.0;
 
 const clock = new THREE.Clock();
 
