@@ -18,4 +18,5 @@ api
 www
 
 .gemini/
+test
 gha-creds-*.json
