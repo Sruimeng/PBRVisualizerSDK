@@ -137,28 +137,34 @@ shadowPlane.position.y = 0.01; // 紧贴地面
 // ==========================================
 // 3. 灯光环境 (Studio Setup)
 // ==========================================
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+pmremGenerator.compileEquirectangularShader();
+
 new RGBELoader()
     .setPath('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/')
     .load('royal_esplanade_1k.hdr', function (texture) {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture;
-        scene.environmentIntensity = 1.0;
-    });
+        texture.mapping = EquirectangularReflectionMapping;
+        const radianceMap =
+            pmremGenerator.fromEquirectangular(texture).texture;
+        pmremGenerator.dispose();
+        scene.background = radianceMap;
+        scene.environment = radianceMap;
+	});
 
 // 主光 (Key)
-const keyLight = new THREE.RectAreaLight(0xffffff, 3.0, 4, 4);
+const keyLight = new THREE.RectAreaLight(0xffffff, 6.0, 4, 4);
 keyLight.position.set(3, 4, 3);
 keyLight.lookAt(0, 0, 0);
 scene.add(keyLight);
 
 // 轮廓光 (Rim)
-const rimLight = new THREE.RectAreaLight(0x4c8bf5, 5.0, 3, 3);
-rimLight.position.set(-3, 2, -4);
-rimLight.lookAt(0, 1, 0);
+const rimLight = new THREE.RectAreaLight(0xffeedd, 5.0, 3, 3);
+rimLight.position.set(4, 0, -4);
+rimLight.lookAt(0, 0, 0);
 scene.add(rimLight);
 
 // 补光 (Fill)
-const fillLight = new THREE.RectAreaLight(0xffeedd, 1.5, 5, 5);
+const fillLight = new THREE.RectAreaLight(0xffeedd, 5, 5, 5);
 fillLight.position.set(-4, 0, 4);
 fillLight.lookAt(0, 0, 0);
 scene.add(fillLight);
@@ -268,7 +274,7 @@ function applyModel(model) {
     positionLights(finalCenter);
 }
 
-loader.load('./demo/glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb', (gltf) => {
+loader.load('../glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb', (gltf) => {
     applyModel(gltf.scene);
 }, undefined, console.error);
 
@@ -292,8 +298,6 @@ if (uploadBtn && fileInput) {
 // ==========================================
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.autoRotate = true; // 开启自动旋转，演示动态阴影
-controls.autoRotateSpeed = 2.0;
 
 const clock = new THREE.Clock();
 
@@ -305,8 +309,8 @@ function animate() {
     if (activeModel) {
         // 1. 模拟模型浮动 (Idle Animation)
         // 这里让模型上下浮动，演示阴影的动态变化
-        const floatOffset = Math.sin(time * 2) * 0.1;
-        activeModel.position.y = (modelBaseY + 0.2) + floatOffset;
+        // const floatOffset = Math.sin(time * 2) * 0.1;
+        // activeModel.position.y = (modelBaseY + 0.2) + floatOffset;
 
         // 2. 阴影跟随 X/Z
         shadowPlane.position.x = activeModel.position.x;
@@ -332,7 +336,7 @@ function animate() {
         positionLights(centerNow);
     }
 
-    controls.update();
+    // controls.update();
     composer.render();
 }
 
