@@ -53,6 +53,8 @@ export class PostProcessSystem {
         this.outputPass = new OutputPass();
         // 默认配置
         this.currentConfig = this.getDefaultConfig();
+        // 同步启用标志与默认配置
+        this.isEnabled = this.currentConfig.enabled;
 
         this.setupComposer(width, height);
 

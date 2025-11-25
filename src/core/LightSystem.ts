@@ -243,7 +243,7 @@ export class LightSystem {
 
         // 轮廓光 (Rim Light) - 来自左后方
         this.rimLight = new THREE.RectAreaLight(
-            0x4c8bf5, // 蓝色调
+            0xffeedd, // 蓝色调
             4.0 * lightScale,
             radius * 2.0,
             radius * 2.0
