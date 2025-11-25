@@ -119,7 +119,7 @@ models: [],
 ```typescript
 models: [{
     id: 'demo_sphere',
-    source: '/demo/glb/sphere.glb'  // 或任何实际模型路径
+    source: '/path/to/your/model.glb'  // 替换为实际模型路径
 }],
 ```
 

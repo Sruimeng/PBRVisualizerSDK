@@ -108,6 +108,8 @@ new PBRVisualizer(options: VisualizerOptions)
 - [AI Studio代码演示](http://localhost:8083/demo/html/ai_studio_code.html)
 - [SDK简单演示](http://localhost:8083/demo/html/material-editor/sdk-simple.html)
 
+Demo系统已包含完整资源文件（4个3D模型、HDR环境贴图），可直接使用。
+
 ## 开发
 
 ```bash

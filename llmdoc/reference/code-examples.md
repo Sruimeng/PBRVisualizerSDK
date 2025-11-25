@@ -179,7 +179,7 @@ createApp().then(visualizer => {
 ## 8. 材质编辑器示例
 
 ```typescript
-import { MaterialEditorDemo } from './demo/src/material-editor/index';
+import { MaterialEditorDemo } from './demo/html/material-editor/sdk-simple';
 
 // 初始化材质编辑器
 const editor = new MaterialEditorDemo({

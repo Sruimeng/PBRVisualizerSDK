@@ -98,15 +98,11 @@
 - 纹理映射配置
 - 材质性能优化
 
-**[环境系统](guides/environment-system.md)** - 使用HDR环境和程序化布光
-- HDR环境贴图加载
-- Studio三点布光配置
-- 程序化环境生成
-
-**[后处理效果](guides/post-processing.md)** - SSAO、Bloom等效果配置
-- SSAO接触阴影设置
-- Bloom泛光效果配置
-- 色调映射和抗锯齿
+**[材质和光照配置](guides/material-and-lighting-configuration.md)** - PBR材质和高级光照设置
+- PBR材质参数详解
+- Studio三点布光系统
+- 材质预设应用
+- 材质编辑器集成
 
 ## 📚 参考资料 (Reference)
 
@@ -120,16 +116,22 @@
 - 材质配置示例
 - 环境和后处理配置
 
-**[类型系统参考](reference/type-system-reference.md)** - 完整的TypeScript类型定义
-- 完整的类型层次结构
-- 接口定义和使用说明
-- 类型约束和验证规则
+**[配置文件](reference/configuration-files.md)** - 构建和开发工具配置
+- TypeScript配置详解
+- 构建工具配置（Vite + Rollup）
+- 代码质量工具配置
 
 **[代码示例](reference/code-examples.md)** - 常用功能的代码示例
 - 完整使用示例
 - 错误处理模式
 - 性能优化实践
 - 材质编辑器高级示例
+
+**[Demo系统状态](reference/demo-system-status.md)** - 演示系统资源文件和状态信息
+- 完整资源文件清单
+- 3D模型和HDR环境贴图信息
+- 演示文件访问路径
+- SDK功能验证指南
 
 **[编码约定](reference/coding-conventions.md)** - TypeScript、ESLint、Prettier规范
 - 代码风格指南
@@ -146,37 +148,59 @@
 - 构建工具配置（Vite + Rollup）
 - 代码质量工具配置
 
+**[示例](reference/examples.md)** - 完整的使用示例和最佳实践
+- 完整使用示例
+- 错误处理模式
+- 性能优化实践
+
 ## 🤖 智能分析报告 (Agent Analysis)
 
-**[PBR渲染核心实现分析](agent/PBR渲染核心实现分析报告.md)** - 渲染系统技术深度分析
-- 当前项目实现状态评估
-- 核心功能模块差距分析
-- 实现建议和重构方向
+**[PBRVisualizer SDK Demo实现全面分析报告](agent/PBRVisualizer_SDK_Demo实现全面分析报告.md)** - Demo实现技术深度分析
+- Demo实现状态评估
+- 核心功能模块分析
+- 实现建议和优化方向
 
-**[API设计分析](agent/PBRVisualizer_SDK_API设计分析报告.md)** - 接口设计和使用模式分析
-- 完整API接口设计文档
-- 初始化和配置方式详解
-- 事件系统和回调机制
+**[demo目录更新分析报告](agent/demo目录更新分析报告.md)** - Demo目录结构和更新分析
+- 目录结构优化分析
+- 功能模块更新评估
+- 实现改进建议
 
-**[核心实现深度分析](agent/PBRVisualizerSDK核心实现深度分析报告.md)** - 系统架构和实现细节分析
-- 核心系统实现分析
-- 渲染管线工作流程
-- 性能优化机制详解
+**[PBR Visualizer初始化修复分析](agent/pbr-visualizer-init-fix.md)** - 初始化问题修复分析
+- 初始化问题诊断
+- 修复方案实现
+- 性能优化建议
+
+**[SDK Demo执行失败分析](agent/sdk-demo-execution-failure-analysis.md)** - 执行失败问题分析
+- 执行失败原因分析
+- 问题诊断和解决方案
+- 系统稳定性优化
+
+**[PBR Visualizer SDK 综合技术分析报告](agent/pbr-visualizer-sdk-comprehensive-analysis.md)** - 项目完整技术状态和成熟度评估
+- 核心架构和技术栈深度分析
+- 功能模块完成度和性能评估
+- 生产环境就绪度和技术债务分析
+
+**[Demo实现状态分析报告](agent/demo-implementation-analysis.md)** - 演示系统功能完整性和技术实现质量评估
+- Demo系统目录结构和功能覆盖度分析
+- 技术实现质量和用户体验评估
+- 改进建议和优化方向
 
 ---
 
 ## 📊 文档统计
 
-- **总文档数**: 28个
+- **总文档数**: 35个（含索引）
 - **架构文档**: 3个
-- **指南文档**: 14个
+- **指南文档**: 15个
 - **参考文档**: 8个
-- **分析报告**: 3个
+- **分析报告**: 6个
 - **代码示例**: 包含完整的使用示例和最佳实践
+- **源代码**: 3,261行TypeScript代码
+- **类型定义**: 343行完整类型系统
 
 ## 🔗 快速导航
 
 - **新手入门**: [快速开始](guides/quick-start.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [API初始化配置](guides/api-setup.md)
 - **深度学习**: [项目概览](overview/project-overview.md) → [核心渲染系统](architecture/core-rendering-system.md) → [状态管理架构](architecture/state-management.md)
-- **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [智能分析报告](agent/)
+- **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [Demo系统状态](reference/demo-system-status.md) → [智能分析报告](agent/)
 - **材质设计**: [材质编辑器使用指南](guides/material-editor-usage.md) → [材质和光照配置](guides/material-and-lighting-configuration.md) → [PBR材质系统](architecture/pbr-material-system.md)

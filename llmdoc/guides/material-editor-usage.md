@@ -9,7 +9,7 @@
 ### 1. 启动材质编辑器
 
 ```typescript
-import { MaterialEditorDemo } from './demo/src/material-editor/index';
+import { MaterialEditorDemo } from './demo/html/material-editor/sdk-simple';
 
 // 初始化材质编辑器
 const editor = new MaterialEditorDemo({
