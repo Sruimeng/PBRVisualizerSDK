@@ -23,6 +23,19 @@ export default () => {
         sourcemap: false,
       },
       plugins,
+      external: (id) => {
+        if (!id) return false;
+        return (
+          id === 'three' ||
+          id === 'postprocessing' ||
+          id === 'react' ||
+          id === 'react-dom' ||
+          id.includes('react/jsx-runtime') ||
+          id.startsWith('three/') ||
+          id.includes('three/addons') ||
+          id.includes('three/examples/jsm')
+        );
+      },
     },
   ];
 };

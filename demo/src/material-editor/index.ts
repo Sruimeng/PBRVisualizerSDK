@@ -115,7 +115,20 @@ export class MaterialEditorDemo {
             // 准备初始化配置
             const options: VisualizerOptions = {
                 container: this.container,
-                models: [],
+                models: [
+                    {
+                        source: './glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb',
+                        id: 'model1',
+                        initialState: {
+                            visible: true,
+                            transform: {
+                                position: new THREE.Vector3(1, 0, 0),
+                                rotation: new THREE.Euler(0, 0, 0),
+                                scale: new THREE.Vector3(1, 1, 1)
+                            }
+                        }
+                    }
+                ],
                 initialGlobalState: {
                     environment: {
                         intensity: 1.0,

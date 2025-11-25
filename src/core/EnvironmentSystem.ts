@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { EnvironmentConfig } from '../types';
 
 /**
@@ -17,6 +17,7 @@ export class EnvironmentSystem {
     private scene: THREE.Scene;
     private pmremGenerator: THREE.PMREMGenerator | null = null;
     private environmentTexture: THREE.Texture | null = null;
+    private environmentRT: THREE.WebGLRenderTarget | null = null;
     private currentConfig: EnvironmentConfig | null = null;
 
     // 性能优化标志（避免重复PMREM处理）
@@ -38,7 +39,7 @@ export class EnvironmentSystem {
     private initializePMREM(): void {
         if (!this.pmremGenerator) {
             this.pmremGenerator = new THREE.PMREMGenerator(this.renderer);
-            this.pmremGenerator.compileCubemapShader();
+            this.pmremGenerator.compileEquirectangularShader();
         }
     }
 
@@ -87,13 +88,13 @@ export class EnvironmentSystem {
         this.isLoading = true;
 
         try {
-            const loader = new RGBELoader();
+            const loader = new HDRLoader();
 
             // 加载HDR环境贴图
-            const texture = await new Promise<THREE.DataTexture>((resolve, reject) => {
+            const texture = await new Promise<THREE.Texture>((resolve, reject) => {
                 loader.load(
                     config.url,
-                    (loadedTexture) => resolve(loadedTexture),
+                    (loadedTexture: THREE.Texture) => resolve(loadedTexture),
                     undefined,
                     reject
                 );
@@ -143,6 +144,7 @@ export class EnvironmentSystem {
 
             // 保存引用用于后续清理
             this.environmentTexture = renderTarget.texture;
+            this.environmentRT = renderTarget;
 
             // 标记环境已生成
             this.environmentGenerated = true;
@@ -160,40 +162,6 @@ export class EnvironmentSystem {
         if (this.currentConfig) {
             this.currentConfig.intensity = intensity;
         }
-    }
-
-    /**
-     * 创建程序化环境（用于快速预览）
-     */
-    public createProceduralEnvironment(type: 'studio' | 'outdoor' | 'neutral' = 'studio'): void {
-        // 清理现有环境
-        this.cleanupPMREM();
-        this.environmentTexture = null;
-
-        // 根据类型创建程序化环境
-        const color = new THREE.Color();
-        const intensity = 1.0;
-
-        switch (type) {
-            case 'studio':
-                color.setHex(0x404040); // 中性灰
-                break;
-            case 'outdoor':
-                color.setHex(0x87ceeb); // 天蓝色
-                this.scene.environmentIntensity = 1.2;
-                return;
-            case 'neutral':
-                color.setHex(0x808080); // 灰色
-                break;
-        }
-
-        // 创建简单的环境光
-        this.scene.background = color;
-        this.scene.environment = null; // 移除环境贴图
-        this.scene.environmentIntensity = intensity;
-
-        this.environmentGenerated = false;
-        console.log(`Procedural environment created: ${type}`);
     }
 
     /**
@@ -215,9 +183,9 @@ export class EnvironmentSystem {
      * 清理PMREM资源
      */
     private cleanupPMREM(): void {
-        if (this.environmentTexture && this.pmremGenerator) {
-            // 清理PMREM渲染目标
-            this.pmremGenerator.dispose();
+        if (this.environmentRT) {
+            this.environmentRT.dispose();
+            this.environmentRT = null;
         }
     }
 

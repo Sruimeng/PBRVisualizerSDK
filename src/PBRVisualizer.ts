@@ -58,11 +58,15 @@ export class PBRVisualizer {
     // 事件系统
     private eventListeners = new Map<string, Function[]>();
 
+    // 配置选项
+    private options: VisualizerOptions;
+
     // 状态标志
     private isInitialized = false;
     private isDisposed = false;
 
     constructor(options: VisualizerOptions) {
+        this.options = options; // 保存配置选项
         this.initializeOptions(options);
         this.setupCoreSystems();
         this.setupLoader();
@@ -100,10 +104,46 @@ export class PBRVisualizer {
             }
         };
 
+        // 初始化模型状态映射
+        const modelsState: Record<string, ModelState> = {};
+
+        // 为每个模型创建初始状态
+        options.models.forEach(modelConfig => {
+            // 创建默认模型状态
+            const defaultModelState: ModelState = {
+                animations: [],
+                visible: true,
+                transform: {
+                    position: new THREE.Vector3(0, 0, 0),
+                    rotation: new THREE.Euler(0, 0, 0),
+                    scale: new THREE.Vector3(1, 1, 1)
+                },
+                // 默认材质配置
+                material: {
+                    color: '#ffffff',
+                    metalness: 0.5,
+                    roughness: 0.5,
+                    envMapIntensity: 1.0
+                },
+                // 默认控制器配置
+                controls: {
+                    enabled: true,
+                    autoRotate: false,
+                    autoRotateSpeed: 1.0
+                }
+            };
+
+            // 合并用户提供的初始状态
+            modelsState[modelConfig.id] = {
+                ...defaultModelState,
+                ...modelConfig.initialState
+            };
+        });
+
         // 合并用户配置
         this.currentState = {
             global: { ...defaultGlobalState, ...options.initialGlobalState },
-            models: {}
+            models: modelsState
         };
     }
 
@@ -161,11 +201,16 @@ export class PBRVisualizer {
         }
 
         try {
-            // 初始化渲染器
-            await this.renderer.initialize();
+            // 初始化渲染器，传递容器参数
+            await this.renderer.initialize({
+                container: this.options.container
+            });
 
             // 应用全局状态
             await this.applyGlobalState(this.currentState.global);
+
+            // 加载所有配置的模型
+            await this.loadInitialModels();
 
             // 设置轨道控制器
             this.setupControls();
@@ -181,6 +226,26 @@ export class PBRVisualizer {
             this.handleError('state', error as Error);
             throw error;
         }
+    }
+
+    /**
+     * 加载初始模型
+     */
+    private async loadInitialModels(): Promise<void> {
+        const loadPromises = this.options.models.map(async (modelConfig) => {
+            try {
+                await this.loadModel(
+                    modelConfig.id,
+                    modelConfig.source,
+                    modelConfig.initialState
+                );
+            } catch (error) {
+                console.error(`Failed to load model ${modelConfig.id}:`, error);
+                // 继续加载其他模型,不因一个模型失败而中断
+            }
+        });
+
+        await Promise.all(loadPromises);
     }
 
     /**

@@ -55,7 +55,8 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'),
       '@sruim/pbr-visualizer-sdk': resolve(__dirname, 'src/index.ts')
-    }
+    },
+    dedupe: ['three']
   },
   optimizeDeps: {
     include: ['three', 'postprocessing']

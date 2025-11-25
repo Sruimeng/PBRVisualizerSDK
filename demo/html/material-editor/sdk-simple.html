@@ -306,7 +306,10 @@
                 // 创建PBR Visualizer实例
                 visualizer = new PBRVisualizer({
                     container: document.getElementById('app'),
-                    models: [],
+                    models: [{
+                        id: MODEL_ID,
+                        source: '../../glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb'
+                    }],
                     initialGlobalState: {
                         environment: {
                             intensity: 1.0,
