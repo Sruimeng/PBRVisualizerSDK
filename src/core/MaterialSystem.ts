@@ -83,7 +83,8 @@ export class MaterialSystem {
         if (config.metallicRoughnessMap) {
             material.metalness = 1; // 使用纹理控制
             material.roughness = 1; // 使用纹理控制
-            material.metalRoughnessMap = this.loadTexture(config.metallicRoughnessMap);
+            material.metalnessMap = this.loadTexture(config.metallicRoughnessMap);
+            material.roughnessMap = this.loadTexture(config.metallicRoughnessMap);
         }
 
         // 缓存材质
@@ -128,7 +129,7 @@ export class MaterialSystem {
         // 设置纹理属性
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.encoding = THREE.sRGBEncoding;
+        // Note: sRGBEncoding was deprecated, use colorSpace instead
 
         // 设置各向异性过滤
         const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
@@ -222,6 +223,15 @@ export class MaterialSystem {
                 if (material.map) {
                     material.map.anisotropy = maxAnisotropy;
                 }
+                if (material.normalMap) {
+                    material.normalMap.anisotropy = maxAnisotropy;
+                }
+                if (material.roughnessMap) {
+                    material.roughnessMap.anisotropy = maxAnisotropy;
+                }
+                if (material.metalnessMap) {
+                    material.metalnessMap.anisotropy = maxAnisotropy;
+                }
 
                 // 设置环境反射强度
                 if (environmentTexture) {
@@ -249,7 +259,7 @@ export class MaterialSystem {
         switch (type) {
             case 'metal':
                 return {
-                    color: 0x888888,
+                    color: '#888888',
                     roughness: 0.1,
                     metalness: 1.0,
                     envMapIntensity: 1.2
@@ -257,7 +267,7 @@ export class MaterialSystem {
 
             case 'plastic':
                 return {
-                    color: 0xffffff,
+                    color: '#ffffff',
                     roughness: 0.3,
                     metalness: 0.0,
                     envMapIntensity: 0.8
@@ -265,7 +275,7 @@ export class MaterialSystem {
 
             case 'wood':
                 return {
-                    color: 0x8b4513,
+                    color: '#8b4513',
                     roughness: 0.8,
                     metalness: 0.0,
                     envMapIntensity: 0.5
@@ -273,7 +283,7 @@ export class MaterialSystem {
 
             case 'glass':
                 return {
-                    color: 0xffffff,
+                    color: '#ffffff',
                     roughness: 0.0,
                     metalness: 0.0,
                     envMapIntensity: 1.0,
@@ -284,7 +294,7 @@ export class MaterialSystem {
 
             case 'fabric':
                 return {
-                    color: 0x444444,
+                    color: '#444444',
                     roughness: 1.0,
                     metalness: 0.0,
                     envMapIntensity: 0.3
@@ -292,7 +302,7 @@ export class MaterialSystem {
 
             default:
                 return {
-                    color: 0xffffff,
+                    color: '#ffffff',
                     roughness: 0.4,
                     metalness: 0.2
                 };
@@ -361,8 +371,8 @@ export class MaterialSystem {
         // 粗略估算内存使用
         let memoryUsage = 0;
         this.textureCache.forEach(texture => {
-            if (texture.image) {
-                const size = texture.image.width * texture.image.height * 4; // RGBA
+            if ((texture as any).image && (texture as any).image.width) {
+                const size = (texture as any).image.width * (texture as any).image.height * 4; // RGBA
                 memoryUsage += size;
             }
         });

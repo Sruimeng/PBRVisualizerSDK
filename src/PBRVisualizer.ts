@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 import {
     GlobalState,
@@ -9,12 +9,9 @@ import {
     SceneState,
     VisualizerOptions,
     BatchUpdate,
-    TransitionOptions,
     StateTransaction,
     PerformanceStats,
-    ErrorEvent,
-    ModelLoadedEvent,
-    StateChangeEvent
+    ErrorEvent
 } from './types';
 
 import { Renderer } from './core/Renderer';
@@ -37,26 +34,26 @@ import { MaterialSystem } from './core/MaterialSystem';
  */
 export class PBRVisualizer {
     // 核心系统
-    private renderer: Renderer;
-    private environmentSystem: EnvironmentSystem;
-    private lightSystem: LightSystem;
-    private postProcessSystem: PostProcessSystem;
-    private materialSystem: MaterialSystem;
+    private renderer!: Renderer;
+    private environmentSystem!: EnvironmentSystem;
+    private lightSystem!: LightSystem;
+    private postProcessSystem!: PostProcessSystem;
+    private materialSystem!: MaterialSystem;
 
     // 场景组件
-    private scene: THREE.Scene;
-    private camera: THREE.PerspectiveCamera;
-    private controls: OrbitControls;
+    private scene!: THREE.Scene;
+    private camera!: THREE.PerspectiveCamera;
+    private controls!: OrbitControls;
 
     // 状态管理
-    private currentState: SceneState;
+    private currentState!: SceneState;
     private transactionHistory: StateTransaction[] = [];
     private currentTransactionIndex = -1;
 
     // 模型管理
     private models = new Map<string, THREE.Object3D>();
-    private gltfLoader: GLTFLoader;
-    private dracoLoader: DRACOLoader;
+    private gltfLoader!: GLTFLoader;
+    private dracoLoader!: DRACOLoader;
 
     // 事件系统
     private eventListeners = new Map<string, Function[]>();
@@ -143,7 +140,7 @@ export class PBRVisualizer {
     private setupLoader(): void {
         this.gltfLoader = new GLTFLoader();
         this.dracoLoader = new DRACOLoader();
-        this.dracoLoader.setDecoderPath('https://unpkg.com/three@0.158.0/examples/jsm/libs/draco/');
+        this.dracoLoader.setDecoderPath('https://unpkg.com/three@0.181.0/examples/jsm/libs/draco/');
         this.gltfLoader.setDRACOLoader(this.dracoLoader);
     }
 
@@ -181,7 +178,7 @@ export class PBRVisualizer {
 
             console.log('PBRVisualizer initialized successfully');
         } catch (error) {
-            this.handleError('init', error as Error);
+            this.handleError('state', error as Error);
             throw error;
         }
     }
@@ -287,7 +284,7 @@ export class PBRVisualizer {
 
             // 处理模型
             const model = gltf.scene;
-            this.processModel(model, initialState);
+            this.processModel(model);
 
             // 添加到场景
             this.scene.add(model);
@@ -329,7 +326,7 @@ export class PBRVisualizer {
     /**
      * 处理模型
      */
-    private processModel(model: THREE.Object3D, initialState?: Partial<ModelState>): void {
+    private processModel(model: THREE.Object3D): void {
         // 计算包围盒并居中
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());
@@ -344,7 +341,7 @@ export class PBRVisualizer {
         model.position.z = -center.z * scale;
 
         // 优化材质
-        this.materialSystem.optimizeModelMaterials(model, this.scene.environment);
+        this.materialSystem.optimizeModelMaterials(model, this.scene.environment || undefined);
     }
 
     /**
@@ -583,7 +580,6 @@ export class PBRVisualizer {
      */
     public getPerformanceStats(): PerformanceStats {
         const rendererStats = this.renderer.getPerformanceStats();
-        const postProcessStats = this.postProcessSystem.getPerformanceInfo();
 
         return {
             ...rendererStats,
@@ -642,7 +638,7 @@ export class PBRVisualizer {
             type,
             message: error.message,
             stack: error.stack,
-            recoverable: type !== 'init'
+            recoverable: type !== 'render'
         };
 
         this.emit('error', errorEvent);

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
-import { PMREMGenerator } from 'three/src/renderers/shaders/PMREMGenerator.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import { EnvironmentConfig } from '../types';
 
 /**
@@ -16,7 +15,7 @@ import { EnvironmentConfig } from '../types';
 export class EnvironmentSystem {
     private renderer: THREE.WebGLRenderer;
     private scene: THREE.Scene;
-    private pmremGenerator: PMREMGenerator | null = null;
+    private pmremGenerator: THREE.PMREMGenerator | null = null;
     private environmentTexture: THREE.Texture | null = null;
     private currentConfig: EnvironmentConfig | null = null;
 
@@ -38,7 +37,7 @@ export class EnvironmentSystem {
      */
     private initializePMREM(): void {
         if (!this.pmremGenerator) {
-            this.pmremGenerator = new PMREMGenerator(this.renderer);
+            this.pmremGenerator = new THREE.PMREMGenerator(this.renderer);
             this.pmremGenerator.compileCubemapShader();
         }
     }
@@ -181,8 +180,8 @@ export class EnvironmentSystem {
                 break;
             case 'outdoor':
                 color.setHex(0x87ceeb); // 天蓝色
-                intensity = 1.2;
-                break;
+                this.scene.environmentIntensity = 1.2;
+                return;
             case 'neutral':
                 color.setHex(0x808080); // 灰色
                 break;
@@ -257,8 +256,8 @@ export class EnvironmentSystem {
             hasTexture: !!this.environmentTexture,
             intensity: this.scene.environmentIntensity,
             textureSize: this.environmentTexture ? {
-                width: this.environmentTexture.source?.data?.width || 0,
-                height: this.environmentTexture.source?.data?.height || 0
+                width: (this.environmentTexture as any).source?.data?.width || 0,
+                height: (this.environmentTexture as any).source?.data?.height || 0
             } : undefined
         };
     }

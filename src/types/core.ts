@@ -142,6 +142,15 @@ export interface MaterialState {
   aoMapIntensity?: number;
   // 环境反射强度；默认值：1.0
   envMapIntensity?: number;
+  // 纹理映射
+  normalMap?: string;              // 法线贴图路径
+  aoMap?: string;                  // AO贴图路径
+  emissiveMap?: string;            // 自发光贴图路径
+  metallicRoughnessMap?: string;   // 金属粗糙度贴图路径
+  // 透明度（用于玻璃等材质）
+  transmission?: number;           // 透射率
+  transparent?: boolean;           // 是否透明
+  opacity?: number;                // 透明度
 }
 
 // 动画状态：当前动画索引、速度与循环播放开关

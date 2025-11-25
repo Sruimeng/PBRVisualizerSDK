@@ -14,7 +14,7 @@ export interface IBLSphereUniforms {
 }
 
 export function createIBLSphereMaterial(initial?: Partial<IBLSphereUniforms>): THREE.RawShaderMaterial {
-  const uniforms: THREE.Uniforms = {
+  const uniforms: { [key: string]: { value: any } } = {
     uCamPos: { value: initial?.uCamPos ?? new THREE.Vector3(0, 0, 0) },
     uTime: { value: initial?.uTime ?? 0 },
     uSmooth: { value: initial?.uSmooth ?? 0.15 },

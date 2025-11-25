@@ -3,7 +3,6 @@ import {
     GlobalState,
     EnvironmentConfig,
     CameraState,
-    PostProcessState,
     QualityConfig,
     PerformanceStats
 } from '../types';
@@ -40,7 +39,6 @@ export class Renderer {
 
     // 帧率计算
     private frameCount = 0;
-    private lastTime = 0;
     private fpsUpdateTime = 0;
 
     constructor() {
@@ -73,7 +71,7 @@ export class Renderer {
         // PBR渲染配置
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.0;
-        this.renderer.useLegacyLights = false;
+        // Note: useLegacyLights property was removed in Three.js r152+
 
         // 阴影配置（暂时关闭，使用后处理阴影）
         this.renderer.shadowMap.enabled = false;
@@ -201,8 +199,8 @@ export class Renderer {
 
         // 设置纹理最大尺寸
         if (quality.maxTextureSize) {
-            const maxTexSize = Math.min(quality.maxTextureSize, this.renderer.capabilities.maxTextureSize);
             // 需要在加载纹理时应用此限制
+            console.log(`Max texture size: ${Math.min(quality.maxTextureSize, this.renderer.capabilities.maxTextureSize)}`);
         }
     }
 
@@ -305,7 +303,7 @@ export class Renderer {
             capabilities: this.renderer.capabilities,
             context: this.renderer.getContext(),
             pixelRatio: this.renderer.getPixelRatio(),
-            drawingBufferSize: this.renderer.getDrawingBufferSize()
+            drawingBufferSize: this.renderer.getDrawingBufferSize(new THREE.Vector2())
         };
     }
 
