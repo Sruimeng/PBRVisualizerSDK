@@ -5,6 +5,7 @@
 ### 材质系统性能监控
 
 1. **实时性能统计**
+
    ```typescript
    // 获取材质系统统计信息
    function getMaterialPerformanceStats() {
@@ -25,6 +26,7 @@
    ```
 
 2. **性能阈值监控**
+
    ```typescript
    function monitorPerformance() {
      const stats = materialSystem.getMaterialStats();
@@ -45,6 +47,7 @@
 ### GPU优化策略
 
 1. **各向异性过滤设置**
+
    ```typescript
    // 材质系统自动应用最优各向异性级别
    function optimizeAnisotropy(material: THREE.Material) {
@@ -60,6 +63,7 @@
    ```
 
 2. **纹理分辨率优化**
+
    ```typescript
    // 根据设备性能调整纹理分辨率
    function optimizeTextureResolution(config: QualityConfig) {
@@ -81,6 +85,7 @@
 ### 材质缓存策略
 
 1. **缓存键生成算法**
+
    ```typescript
    // 高效的材质缓存键生成
    function generateMaterialCacheKey(config: MaterialState): string {
@@ -115,6 +120,7 @@
    ```
 
 2. **纹理缓存优化**
+
    ```typescript
    // 智能纹理缓存系统
    class TextureCache {
@@ -155,6 +161,7 @@
 ### 缓存预热策略
 
 1. **常用材质预热**
+
    ```typescript
    // 预加载常用材质预设
    async function preloadCommonMaterials() {
@@ -170,6 +177,7 @@
    ```
 
 2. **纹理预加载**
+
    ```typescript
    // 批量纹理预加载
    class TexturePreloader {
@@ -199,6 +207,7 @@
 ### 资源生命周期管理
 
 1. **智能资源清理**
+
    ```typescript
    // 自动资源清理系统
    class ResourceManager {
@@ -237,6 +246,7 @@
    ```
 
 2. **材质实例池**
+
    ```typescript
    // 材质实例池管理
    class MaterialPool {
@@ -269,6 +279,7 @@
 ### 内存使用监控
 
 1. **实时内存统计**
+
    ```typescript
    // 扩展内存监控功能
    function getDetailedMemoryStats() {
@@ -296,6 +307,7 @@
    ```
 
 2. **内存泄漏检测**
+
    ```typescript
    // 内存泄漏检测
    class MemoryLeakDetector {
@@ -322,6 +334,7 @@
 ### 材质批处理优化
 
 1. **相同材质合并**
+
    ```typescript
    // 材质批处理优化
    class MaterialBatcher {
@@ -357,6 +370,7 @@
    ```
 
 2. **LOD材质系统**
+
    ```typescript
    // 基于距离的材质LOD系统
    class MaterialLODSystem {
@@ -392,6 +406,7 @@
 ### GPU内存优化
 
 1. **纹理压缩**
+
    ```typescript
    // 纹理压缩优化
    class TextureCompressor {
@@ -416,6 +431,7 @@
    ```
 
 2. **材质实例共享**
+
    ```typescript
    // 材质实例共享优化
    class MaterialSharing {
@@ -459,6 +475,7 @@
 ### 异步材质更新
 
 1. **非阻塞材质更新**
+
    ```typescript
    // 异步材质更新系统
    class AsyncMaterialUpdater {
@@ -508,6 +525,7 @@
    ```
 
 2. **材质预热和预编译**
+
    ```typescript
    // 着色器预编译
    class ShaderPrecompiler {
@@ -536,6 +554,7 @@
 ### 性能分析工具
 
 1. **性能分析器**
+
    ```typescript
    // 材质性能分析器
    class MaterialProfiler {
@@ -567,6 +586,7 @@
    ```
 
 2. **实时性能监控**
+
    ```typescript
    // 实时性能监控面板
    class PerformanceMonitor {
@@ -610,6 +630,7 @@
 ### 缓存优化建议
 
 1. **缓存键设计**
+
    - 使用有意义的缓存键格式，便于调试
    - 考虑材质参数的精度，避免因微小差异导致缓存失效
    - 定期清理不再使用的缓存项
@@ -622,6 +643,7 @@
 ### 渲染性能建议
 
 1. **材质批处理**
+
    - 尽可能合并相同材质的网格
    - 使用实例化渲染减少DrawCall
    - 合理使用LOD系统优化远距离渲染
@@ -634,6 +656,7 @@
 ### 调试和监控
 
 1. **性能监控**
+
    - 实时监控内存使用和缓存效率
    - 记录性能指标，分析性能瓶颈
    - 建立性能基线，及时发现异常

@@ -135,14 +135,14 @@ function updateButtonStates(activeMode) {
 
 ## 5. 参数说明
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `enabled` | `false` | 是否启用TransformControls |
-| `mode` | `'rotate'` | 操作模式：translate/rotate/scale |
-| `size` | `1.0` | 控制器大小缩放因子 |
-| `showX` | `true` | 是否显示X轴（红色） |
-| `showY` | `true` | 是否显示Y轴（绿色） |
-| `showZ` | `true` | 是否显示Z轴（蓝色） |
+| 参数      | 默认值     | 说明                             |
+| --------- | ---------- | -------------------------------- |
+| `enabled` | `false`    | 是否启用TransformControls        |
+| `mode`    | `'rotate'` | 操作模式：translate/rotate/scale |
+| `size`    | `1.0`      | 控制器大小缩放因子               |
+| `showX`   | `true`     | 是否显示X轴（红色）              |
+| `showY`   | `true`     | 是否显示Y轴（绿色）              |
+| `showZ`   | `true`     | 是否显示Z轴（蓝色）              |
 
 ## 6. 常见使用场景
 

@@ -29,12 +29,6 @@
       "@sruim/pbr-visualizer-sdk": ["src/index.ts"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "demo"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "demo"]
 }

@@ -229,8 +229,12 @@
       }
 
       @keyframes pulse {
-        from { opacity: 0.6; }
-        to { opacity: 1; }
+        from {
+          opacity: 0.6;
+        }
+        to {
+          opacity: 1;
+        }
       }
 
       /* 加载提示 */
@@ -336,7 +340,7 @@
 
       <!-- 信息说明 -->
       <div class="info-box">
-        <strong>功能说明：</strong><br>
+        <strong>功能说明：</strong><br />
         展示多模型加载、状态机动画切换、暗角背景效果和相机聚焦功能。
         左侧为Camera模型，右侧为Test模型（支持动画状态机）。
       </div>
@@ -345,13 +349,17 @@
       <div class="control-group">
         <h3>🎯 模型控制</h3>
         <label>选择模型</label>
-        <div class="button-group" style="margin-top: 5px;">
+        <div class="button-group" style="margin-top: 5px">
           <button id="select-camera-btn" onclick="selectModel('camera_model')">Camera模型</button>
-          <button id="select-test-btn" class="active" onclick="selectModel('test_model')">Test模型</button>
+          <button id="select-test-btn" class="active" onclick="selectModel('test_model')">
+            Test模型
+          </button>
         </div>
-        <label style="margin-top: 10px; display: block;">变换模式</label>
-        <div class="button-group-3" style="margin-top: 5px;">
-          <button id="mode-rotate-btn" class="active" onclick="setTransformMode('rotate')">旋转</button>
+        <label style="margin-top: 10px; display: block">变换模式</label>
+        <div class="button-group-3" style="margin-top: 5px">
+          <button id="mode-rotate-btn" class="active" onclick="setTransformMode('rotate')">
+            旋转
+          </button>
           <button id="mode-translate-btn" onclick="setTransformMode('translate')">移动</button>
           <button id="mode-scale-btn" onclick="setTransformMode('scale')">缩放</button>
         </div>
@@ -365,7 +373,7 @@
           <button onclick="focusCamera('both')">居中</button>
           <button onclick="focusCamera('test_model')">聚焦右侧</button>
         </div>
-        <div class="button-group" style="margin-top: 8px;">
+        <div class="button-group" style="margin-top: 8px">
           <button id="auto-rotate-btn" onclick="toggleAutoRotate()">自动旋转</button>
           <button onclick="resetCamera()">重置相机</button>
         </div>
@@ -420,8 +428,14 @@
       <!-- 暗角效果 - Camera模型 -->
       <div class="control-group">
         <h3>🌑 暗角 - Camera模型</h3>
-        <button id="vignette-toggle-btn-camera_model" class="active" onclick="toggleVignette('camera_model')">关闭暗角</button>
-        <div class="control" style="margin-top: 12px;">
+        <button
+          id="vignette-toggle-btn-camera_model"
+          class="active"
+          onclick="toggleVignette('camera_model')"
+        >
+          关闭暗角
+        </button>
+        <div class="control" style="margin-top: 12px">
           <label>球体半径比例 <span class="value" id="vignette-radius-camera">1.50</span></label>
           <input
             type="range"
@@ -448,8 +462,14 @@
       <!-- 暗角效果 - Test模型 -->
       <div class="control-group">
         <h3>🌑 暗角 - Test模型</h3>
-        <button id="vignette-toggle-btn-test_model" class="active" onclick="toggleVignette('test_model')">关闭暗角</button>
-        <div class="control" style="margin-top: 12px;">
+        <button
+          id="vignette-toggle-btn-test_model"
+          class="active"
+          onclick="toggleVignette('test_model')"
+        >
+          关闭暗角
+        </button>
+        <div class="control" style="margin-top: 12px">
           <label>球体半径比例 <span class="value" id="vignette-radius-test">1.50</span></label>
           <input
             type="range"

@@ -7,6 +7,7 @@
 ## 2. TypeScript配置
 
 ### tsconfig.json
+
 ```json
 {
   "compilerOptions": {
@@ -51,6 +52,7 @@
 ```
 
 ### tsconfig.node.json
+
 ```json
 {
   "compilerOptions": {
@@ -65,6 +67,7 @@
 ```
 
 **关键配置说明：**
+
 - `strict`: 启用所有严格类型检查
 - `noUncheckedIndexedAccess`: 安全的索引访问
 - `paths`: 配置路径别名，便于导入
@@ -73,6 +76,7 @@
 ## 3. 构建配置
 
 ### Vite配置 (vite.config.ts)
+
 ```typescript
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
@@ -165,6 +169,7 @@ export default defineConfig({
 ```
 
 ### Rollup配置 (rollup.config.js)
+
 ```javascript
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -208,6 +213,7 @@ export default [
 ```
 
 **构建配置要点：**
+
 - 支持库模式构建，发布为NPM包
 - 生成完整的TypeScript声明文件
 - 配置了代码分割和优化策略
@@ -216,6 +222,7 @@ export default [
 ## 4. 代码质量配置
 
 ### ESLint配置 (.eslintrc.js)
+
 ```javascript
 module.exports = {
   root: true,
@@ -261,6 +268,7 @@ module.exports = {
 ```
 
 ### Prettier配置 (.prettierrc)
+
 ```json
 {
   "semi": false,
@@ -277,6 +285,7 @@ module.exports = {
 ```
 
 ### 编辑器配置 (.editorconfig)
+
 ```ini
 root = true
 
@@ -303,6 +312,7 @@ trim_trailing_whitespace = false
 ```
 
 **代码质量配置要点：**
+
 - 严格的TypeScript类型检查
 - Vue 3最佳实践规则
 - 统一的代码格式化
@@ -311,6 +321,7 @@ trim_trailing_whitespace = false
 ## 5. Git配置
 
 ### .gitignore
+
 ```gitignore
 # 依赖
 node_modules/
@@ -387,6 +398,7 @@ dist-electron/
 ```
 
 ### 提交规范 (commitlint.config.js)
+
 ```javascript
 module.exports = {
   extends: ['@commitlint/config-conventional'],
@@ -425,6 +437,7 @@ module.exports = {
 ```
 
 **Git配置要点：**
+
 - 全面的文件忽略规则
 - 基于约定的提交信息规范
 - 支持Conventional Commits标准
@@ -432,6 +445,7 @@ module.exports = {
 ## 6. 开发工具配置
 
 ### Husky配置 (package.json)
+
 ```json
 {
   "husky": {
@@ -457,6 +471,7 @@ module.exports = {
 ```
 
 ### 开发环境配置 (.env.development)
+
 ```env
 VITE_APP_TITLE=PBR Visualizer Dev
 VITE_APP_ENV=development
@@ -474,6 +489,7 @@ VITE_APP_MOCK_DELAY=200
 ```
 
 ### 生产环境配置 (.env.production)
+
 ```env
 VITE_APP_TITLE=PBR Visualizer
 VITE_APP_ENV=production
@@ -488,6 +504,7 @@ VITE_APP_PWA=true
 ```
 
 **开发工具配置要点：**
+
 - Git Hooks自动化检查
 - 不同环境的配置隔离
 - 开发和生产环境差异化配置
@@ -495,6 +512,7 @@ VITE_APP_PWA=true
 ## 7. NPM配置
 
 ### package.json
+
 ```json
 {
   "name": "pbr-visualizer-sdk",
@@ -575,6 +593,7 @@ VITE_APP_PWA=true
 ```
 
 **NPM配置要点：**
+
 - 完整的包信息配置
 - 多格式模块导出
 - 开发和生产脚本分离
@@ -583,6 +602,7 @@ VITE_APP_PWA=true
 ## 8. CI/CD配置
 
 ### GitHub Actions (.github/workflows/ci.yml)
+
 ```yaml
 name: CI/CD Pipeline
 
@@ -649,6 +669,7 @@ jobs:
 ```
 
 ### 部署配置 (vercel.json)
+
 ```json
 {
   "builds": [
@@ -673,6 +694,7 @@ jobs:
 ```
 
 **CI/CD配置要点：**
+
 - 多版本Node.js测试
 - 自动化构建和发布
 - 安全的密钥管理

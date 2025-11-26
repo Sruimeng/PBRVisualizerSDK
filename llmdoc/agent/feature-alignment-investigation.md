@@ -3,6 +3,7 @@
 ### Code Sections (The Evidence)
 
 #### 后处理系统实现
+
 - `src/core/PostProcessSystem.ts` (constructor): 初始化EffectComposer，默认创建RenderPass、SSAOPass和OutputPass（第50-109行）
 - `src/core/PostProcessSystem.ts` (getDefaultConfig): 默认配置中SSAO enabled为true，但需检查全局enabled标志（第67-92行）
 - `src/core/PostProcessSystem.ts` (render): 根据isEnabled标志决定是否使用composer.render()或直接renderer.render()（第206-219行）
@@ -10,12 +11,14 @@
 - `src/core/PostProcessSystem.ts` (setConfig): 应用配置时会调用setEnabled和applySSAOConfig（第115-139行）
 
 #### 主类渲染循环
+
 - `src/PBRVisualizer.ts` (startRenderLoop): 在animate循环中调用postProcessSystem.render()（第310-327行）
 - `src/PBRVisualizer.ts` (setupCoreSystems): PostProcessSystem在构造器中被初始化（第164-170行）
 - `src/PBRVisualizer.ts` (applyGlobalState): 在初始化时应用postProcessing配置到postProcessSystem（第263-266行）
 - `src/PBRVisualizer.ts` (onWindowResize): 窗口大小变化时调用postProcessSystem.setSize()（第740-742行）
 
 #### 灯光系统实现
+
 - `src/core/LightSystem.ts` (constructor): 初始化RectAreaLightUniformsLib.init()（第32-42行）
 - `src/core/LightSystem.ts` (createStudioLighting): 完整实现三点布光系统，创建keyLight、rimLight、fillLight（第213-276行）
 - `src/core/LightSystem.ts` (createRectAreaLight): 支持RectAreaLight创建，设置宽高属性（第85-98行）
@@ -23,10 +26,12 @@
 - `src/PBRVisualizer.ts` (setupStudioLighting): 计算模型边界并调用lightSystem.createStudioLighting()（第415-425行）
 
 #### Demo配置示例
+
 - `src/demo/sdk-simple.ts` (init): 初始化时设置postProcessing配置，ssao默认disabled（第136-141行）
 - `src/demo/sdk-simple.ts` (init): 同时启用SSAO和Bloom但设置ssao.enabled为false（第130-141行）
 
 #### 参考实现对比
+
 - `demo/html/ai_studio_code.html` (line 90): 调用RectAreaLightUniformsLib.init()
 - `demo/html/ai_studio_code.html` (line 155-170): 创建三个RectAreaLight（Key、Rim、Fill）
 - `demo/html/ai_studio_code.html` (line 202-213): EffectComposer中添加RenderPass、SSAOPass、OutputPass
@@ -48,6 +53,7 @@
 1. **PostProcessSystem.isEnabled初始化为false**（第34行）：构造函数完成后，isEnabled仍为false状态，直到外部调用setEnabled()
 
 2. **初始化流程中应用配置有问题**：
+
    - setupCoreSystems()创建PostProcessSystem时，isEnabled为false
    - applyGlobalState()调用postProcessSystem.setConfig()应用配置
    - 但setConfig()内部的setEnabled()只有当config.enabled !== undefined时才被调用（第120行）
@@ -58,6 +64,7 @@
 4. **Demo配置验证**：sdk-simple.ts中postProcessing.enabled设置为true（第124行），但这只写入currentConfig，不更新isEnabled
 
 **具体生效流程缺陷：**
+
 ```
 PostProcessSystem constructor:
   this.isEnabled = false  // ← 问题在这里
@@ -83,10 +90,12 @@ render():
 SDK的LightSystem已完全支持参考实现中的所有功能：
 
 1. **RectAreaLight支持**：
+
    - ✅ RectAreaLightUniformsLib.init()在LightSystem构造器中被调用（第41行）
    - ✅ createRectAreaLight()完整实现，支持宽高参数（第85-98行）
 
 2. **Studio三点布光实现**：
+
    - ✅ createStudioLighting()完整实现（第213-276行）
    - ✅ 计算keyLight、rimLight、fillLight三个RectAreaLight
    - ✅ 使用模型边界自适应灯光大小和强度
@@ -105,14 +114,14 @@ SDK的LightSystem已完全支持参考实现中的所有功能：
 
 **现状对比：**
 
-| 功能点 | ai_studio_code.html | SDK实现 | 状态 |
-|--------|-------------------|--------|------|
-| 渲染器创建 | WebGLRenderer | Renderer类包装 | ✅ |
-| 后处理初始化 | new EffectComposer() | PostProcessSystem中创建 | ✅ |
-| 渲染循环 | composer.render() | postProcessSystem.render() | ✅ |
-| SSAO配置 | SSAOPass参数设置 | applySSAOConfig()应用 | ✅ |
-| 色调映射 | renderer.toneMapping | applyToneMappingConfig()设置 | ✅ |
-| 窗口大小处理 | composer.setSize()和ssaoPass.setSize() | postProcessSystem.setSize() | ✅ |
+| 功能点       | ai_studio_code.html                    | SDK实现                      | 状态 |
+| ------------ | -------------------------------------- | ---------------------------- | ---- |
+| 渲染器创建   | WebGLRenderer                          | Renderer类包装               | ✅   |
+| 后处理初始化 | new EffectComposer()                   | PostProcessSystem中创建      | ✅   |
+| 渲染循环     | composer.render()                      | postProcessSystem.render()   | ✅   |
+| SSAO配置     | SSAOPass参数设置                       | applySSAOConfig()应用        | ✅   |
+| 色调映射     | renderer.toneMapping                   | applyToneMappingConfig()设置 | ✅   |
+| 窗口大小处理 | composer.setSize()和ssaoPass.setSize() | postProcessSystem.setSize()  | ✅   |
 
 **关键区别**：ai_studio_code.html直接在render loop中调用composer.render()，而SDK通过postProcessSystem.render()间接调用，但逻辑相同。
 
@@ -216,4 +225,3 @@ this.setupComposer(width, height);
 - **色调映射**: ✅ ACES Filmic映射已应用
 
 **结论**：PostProcessSystem 后处理系统 bug 已完全修复，后处理效果现在可以正常生效。
-

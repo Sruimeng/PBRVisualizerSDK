@@ -2,8 +2,8 @@ import * as THREE from 'three';
 
 export function roughnessToMip(roughness: number): number {
   if (roughness >= 0.8) return -2.0 * Math.log2(1.16 * roughness);
-  if (roughness >= 0.4) return (0.8 - roughness) * (3.0 - 1.0) / (0.8 - 0.4) + 1.0;
-  return (0.4 - roughness) * (1.0 - 0.0) / (0.4 - 0.0) + 0.0;
+  if (roughness >= 0.4) return ((0.8 - roughness) * (3.0 - 1.0)) / (0.8 - 0.4) + 1.0;
+  return ((0.4 - roughness) * (1.0 - 0.0)) / (0.4 - 0.0) + 0.0;
 }
 
 export function getSamplesForRoughness(roughness: number): number {
@@ -13,13 +13,16 @@ export function getSamplesForRoughness(roughness: number): number {
   return 16;
 }
 
-export function createSGBMaterial(envMap: THREE.Texture, options: {
-  samples: number;
-  latitudinal: boolean;
-  dTheta: number;
-  mipInt: number;
-  poleAxis: THREE.Vector3;
-}): THREE.RawShaderMaterial {
+export function createSGBMaterial(
+  envMap: THREE.Texture,
+  options: {
+    samples: number;
+    latitudinal: boolean;
+    dTheta: number;
+    mipInt: number;
+    poleAxis: THREE.Vector3;
+  },
+): THREE.RawShaderMaterial {
   const n = 20;
   const weights = new Float32Array(n);
   for (let i = 0; i < n; i++) {
@@ -83,13 +86,12 @@ void main(){
       latitudinal: { value: options.latitudinal },
       dTheta: { value: options.dTheta },
       mipInt: { value: options.mipInt },
-      poleAxis: { value: options.poleAxis.clone() }
+      poleAxis: { value: options.poleAxis.clone() },
     },
     vertexShader,
     fragmentShader,
     depthWrite: false,
     depthTest: false,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 }
-

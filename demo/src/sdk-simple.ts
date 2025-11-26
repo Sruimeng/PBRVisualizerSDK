@@ -1,5 +1,5 @@
 import { PBRVisualizer, SSAOOutputMode } from '@sruim/pbr-visualizer-sdk';
-import { Vector3, Color } from 'three';
+import { Color, Vector3 } from 'three';
 
 // 全局类型声明
 declare global {
@@ -100,7 +100,8 @@ export class MaterialEditor {
           {
             id: this.modelId,
             // cspell:disable-next-line
-            source: '../../glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb',
+            source:
+              '../../glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb',
           },
         ],
         initialGlobalState: {
@@ -287,7 +288,11 @@ export class MaterialEditor {
    * 生成随机材质
    */
   public async randomizeMaterial(): Promise<void> {
-    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    const randomColor =
+      '#' +
+      Math.floor(Math.random() * 16777215)
+        .toString(16)
+        .padStart(6, '0');
     const randomMetalness = Math.random();
     const randomRoughness = Math.random();
 
@@ -415,7 +420,7 @@ export class MaterialEditor {
       [SSAOOutputMode.SSAO]: 'SSAO',
       [SSAOOutputMode.Blur]: '模糊',
       [SSAOOutputMode.Depth]: '深度',
-      [SSAOOutputMode.Normal]: '法线'
+      [SSAOOutputMode.Normal]: '法线',
     };
 
     console.log(`[MaterialEditor] Buffer mode: ${modeNames[nextMode]}`);

@@ -1,7 +1,7 @@
+import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import { resolve } from 'path';
 
 export default defineConfig(({ command }) => ({
   server: {
@@ -20,7 +20,7 @@ export default defineConfig(({ command }) => ({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'PBRVisualizer',
-      fileName: (format) => `index.${format === 'es' ? 'mjs' : format === 'cjs' ? 'cjs' : 'js'}`
+      fileName: (format) => `index.${format === 'es' ? 'mjs' : format === 'cjs' ? 'cjs' : 'js'}`,
     },
     rollupOptions: {
       external: ['three', 'postprocessing', 'react', 'react-dom', 'react/jsx-runtime'],
@@ -29,19 +29,19 @@ export default defineConfig(({ command }) => ({
           three: 'THREE',
           postprocessing: 'POSTPROCESSING',
           react: 'React',
-          'react-dom': 'ReactDOM'
+          'react-dom': 'ReactDOM',
         },
-        exports: 'named'
-      }
+        exports: 'named',
+      },
     },
     target: 'es2020',
     minify: 'terser',
-    sourcemap: true
+    sourcemap: true,
   },
   plugins: [
     dts({
       insertTypesEntry: true,
-      outDir: 'dist/types'
+      outDir: 'dist/types',
     }),
     ...(command === 'build'
       ? [
@@ -49,20 +49,20 @@ export default defineConfig(({ command }) => ({
             targets: [
               { src: 'ai_studio_code.html', dest: '.' },
               { src: 'gl.html', dest: '.' },
-              { src: 'demo/**', dest: 'demo' }
-            ]
-          })
+              { src: 'demo/**', dest: 'demo' },
+            ],
+          }),
         ]
-      : [])
+      : []),
   ],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@sruim/pbr-visualizer-sdk': resolve(__dirname, 'src/index.ts')
+      '@sruim/pbr-visualizer-sdk': resolve(__dirname, 'src/index.ts'),
     },
-    dedupe: ['three']
+    dedupe: ['three'],
   },
   optimizeDeps: {
-    include: ['three', 'postprocessing']
-  }
+    include: ['three', 'postprocessing'],
+  },
 }));

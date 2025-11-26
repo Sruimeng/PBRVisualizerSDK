@@ -1,4 +1,4 @@
-import { Color, Euler, ToneMapping, Vector3 } from 'three';
+import type { Color, Euler, ToneMapping, Vector3 } from 'three';
 
 // 全局状态接口：描述环境、场景、灯光、相机与后处理的整体配置
 export interface GlobalState {
@@ -143,20 +143,20 @@ export interface MaterialState {
   // 环境反射强度；默认值：1.0
   envMapIntensity?: number;
   // 纹理映射
-  normalMap?: string;              // 法线贴图路径
-  aoMap?: string;                  // AO贴图路径
-  emissiveMap?: string;            // 自发光贴图路径
-  metallicRoughnessMap?: string;   // 金属粗糙度贴图路径
+  normalMap?: string; // 法线贴图路径
+  aoMap?: string; // AO贴图路径
+  emissiveMap?: string; // 自发光贴图路径
+  metallicRoughnessMap?: string; // 金属粗糙度贴图路径
   // 透明度（用于玻璃等材质）
-  transmission?: number;           // 透射率
-  transparent?: boolean;           // 是否透明
-  opacity?: number;                // 透明度
+  transmission?: number; // 透射率
+  transparent?: boolean; // 是否透明
+  opacity?: number; // 透明度
 }
 
 // 动画状态：当前动画索引、速度与循环播放开关
 export interface AnimationState {
   // 动画 ID；默认值：必填  (不能重复, 用于后续动画状态更新)
-  id: string,
+  id: string;
   // 是否启用动画；默认值：false
   enabled: boolean;
   // 当前动画索引；默认值：0
@@ -170,6 +170,8 @@ export interface AnimationState {
 }
 
 export interface ControlState {
+  // div 元素 ID；默认值：必填  (用于后续控制状态更新)
+  divId: string;
   // 是否启用控制；默认值：true
   enabled: boolean;
   // 是否自动旋转；默认值：false
@@ -308,55 +310,6 @@ export interface BatchUpdate {
   state: Partial<ModelState>;
 }
 
-export interface BatchOptions {
-  // 动画时长（ms）；默认值：300
-  duration: number;
-  // 缓动类型；默认值：'easeOutCubic'
-  easing?: string;
-  // 描述信息
-  description?: string;
-}
-
-// 过渡选项：动画过渡控制
-export interface TransitionOptions {
-  // 过渡时长（ms）；默认值：300
-  duration: number;
-  // 缓动类型；默认值：'easeOutCubic'
-  easing?: string;
-  // 是否插值过渡；默认值：true
-  interpolate?: boolean;
-}
-
-// 颜色渐变：用于程序化背景或材质渐变
-export interface ColorGradient {
-  // 渐变关键点列表
-  stops: Array<{
-    // 位置（0-1）；默认值：按需
-    position: number;
-    // 颜色；默认值：按需
-    color: string | Color;
-  }>;
-}
-
-// 事件类型：状态变更与模型加载等事件的载荷
-export interface StateChangeEvent {
-  // 状态 ID
-  stateId: string;
-  // 受影响的模型列表
-  updatedModels: string[];
-  // 变更时间戳
-  timestamp: number;
-}
-
-export interface ModelLoadedEvent {
-  // 模型 ID
-  modelId: string;
-  // 加载耗时（ms）
-  loadTime: number;
-  // 三角形数量
-  triangleCount: number;
-}
-
 export interface ErrorEvent {
   // 错误类型
   type: 'render' | 'load' | 'state' | 'memory';
@@ -409,7 +362,7 @@ export enum SSAOOutputMode {
   /** 深度Buffer - 显示场景深度图 */
   Depth = 3,
   /** 法线Buffer - 显示法线贴图 */
-  Normal = 4
+  Normal = 4,
 }
 
 /**
@@ -434,8 +387,6 @@ export interface DebugConfig {
 export interface LightHelperConfig {
   // 是否显示灯光Helper；默认：false
   enabled: boolean;
-  // 要显示的灯光ID列表；默认：[] (空表示显示所有)
-  lightIds: string[];
   // Helper大小缩放；默认：1.0
   scale: number;
 }
@@ -456,8 +407,6 @@ export interface BufferVisualizationConfig {
 export interface DebugPerformanceConfig {
   // 是否在面板中显示性能统计；默认：true
   showStats: boolean;
-  // 是否显示渲染通道耗时；默认：false
-  showPassTimings: boolean;
 }
 
 /**
@@ -501,7 +450,7 @@ export enum TransitionEffectType {
   /** 缩放 */
   Scale = 'scale',
   /** 淡入淡出 + 缩放组合 */
-  FadeScale = 'fadeScale'
+  FadeScale = 'fadeScale',
 }
 
 /**

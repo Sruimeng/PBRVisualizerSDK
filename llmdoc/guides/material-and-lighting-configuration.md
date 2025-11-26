@@ -3,6 +3,7 @@
 ## 高级材质配置
 
 1. **创建自定义材质**
+
    ```typescript
    // 基础PBR材质
    const customMaterial = visualizer.materialSystem.createMaterial('custom', {
@@ -38,6 +39,7 @@
    ```
 
 2. **材质预设系统**
+
    ```typescript
    // 使用预设材质
    const presets = ['metal', 'plastic', 'wood', 'glass', 'fabric'];
@@ -58,6 +60,7 @@
    ```
 
 3. **动态材质更新**
+
    ```typescript
    // 实时更新材质属性
    await visualizer.updateModel('product1', {
@@ -73,6 +76,7 @@
    ```
 
 4. **材质性能优化**
+
    ```typescript
    // 优化模型材质
    visualizer.materialSystem.optimizeModelMaterials(modelObject, environmentTexture);
@@ -88,6 +92,7 @@
 ## 高级光照配置
 
 1. **Studio三点布光系统**
+
    ```typescript
    // 自动布光（推荐）
    visualizer.lightSystem.createStudioLighting({
@@ -101,6 +106,7 @@
    ```
 
 2. **自定义光源创建**
+
    ```typescript
    // 矩形区域光（主光）
    visualizer.lightSystem.createLight('keyLight', {
@@ -134,6 +140,7 @@
    ```
 
 3. **动态光照控制**
+
    ```typescript
    // 更新单个光源
    visualizer.lightSystem.updateLight('keyLight', {
@@ -153,6 +160,7 @@
    ```
 
 4. **环境光照配置**
+
    ```typescript
    // HDR环境贴图
    await visualizer.environmentSystem.setEnvironment({
@@ -175,6 +183,7 @@
 ## 复合配置示例
 
 1. **金属材质+高光效果**
+
    ```typescript
    // 金属材质配置
    await visualizer.updateModel('product1', {
@@ -198,6 +207,7 @@
    ```
 
 2. **玻璃材质+特殊光照**
+
    ```typescript
    // 玻璃材质配置
    await visualizer.updateModel('product1', {
@@ -217,6 +227,7 @@
    ```
 
 3. **织物材质+漫反射**
+
    ```typescript
    // 织物材质配置
    await visualizer.updateModel('product1', {
@@ -258,6 +269,7 @@
 ## 配置验证和调试
 
 1. **光照配置验证**
+
    ```typescript
    // 获取所有灯光信息
    const lightsInfo = visualizer.lightSystem.getAllLightsInfo();
@@ -267,6 +279,7 @@
    ```
 
 2. **材质配置验证**
+
    ```typescript
    // 获取材质配置
    const materialConfig = visualizer.materialSystem.getMaterialConfig('materialId');
@@ -412,6 +425,7 @@ visualizer.materialSystem.addPreset(customPreset);
 ## 配置验证和调试
 
 1. **光照配置验证**
+
    ```typescript
    // 获取所有灯光信息
    const lightsInfo = visualizer.lightSystem.getAllLightsInfo();
@@ -421,6 +435,7 @@ visualizer.materialSystem.addPreset(customPreset);
    ```
 
 2. **材质配置验证**
+
    ```typescript
    // 获取材质配置
    const materialConfig = visualizer.materialSystem.getMaterialConfig('materialId');

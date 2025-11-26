@@ -14,6 +14,7 @@
 ### 1. 修复 `initializeOptions` 方法
 
 **修复前:**
+
 ```typescript
 private initializeOptions(options: VisualizerOptions): void {
     // ...创建默认全局状态...
@@ -27,6 +28,7 @@ private initializeOptions(options: VisualizerOptions): void {
 ```
 
 **修复后:**
+
 ```typescript
 private initializeOptions(options: VisualizerOptions): void {
     // ...创建默认全局状态...
@@ -207,11 +209,13 @@ await visualizer.initialize();
 ### 模型状态初始化流程
 
 1. **构造阶段** (`constructor`):
+
    - 保存 `options`
    - 调用 `initializeOptions` 创建所有模型的初始状态
    - 此时模型状态已创建,但3D对象尚未加载
 
 2. **初始化阶段** (`initialize`):
+
    - 初始化渲染器
    - 应用全局状态
    - **调用 `loadInitialModels` 加载所有模型**
@@ -228,6 +232,7 @@ await visualizer.initialize();
 ### Studio灯光系统
 
 `setupStudioLighting` 方法会为每个模型创建:
+
 - 主光源 (Key Light)
 - 补光 (Fill Light)
 - 背光/轮廓光 (Rim Light)
@@ -243,6 +248,7 @@ await visualizer.initialize();
 ## 测试建议
 
 1. **基础功能测试**:
+
 ```typescript
 const visualizer = new PBRVisualizer({
     container: document.getElementById('app'),
@@ -258,6 +264,7 @@ await visualizer.initialize();
 ```
 
 2. **多模型测试**:
+
 ```typescript
 const visualizer = new PBRVisualizer({
     container: document.getElementById('app'),
@@ -274,6 +281,7 @@ await visualizer.initialize();
 ```
 
 3. **初始状态测试**:
+
 ```typescript
 const visualizer = new PBRVisualizer({
     container: document.getElementById('app'),
@@ -303,6 +311,7 @@ await visualizer.initialize();
 ## 向后兼容性
 
 ✅ 此修复保持向后兼容:
+
 - 原有的 `loadModel` API 仍然可用
 - 手动加载模型的方式仍然有效
 - 仅增强了初始化流程,未破坏现有功能
@@ -318,6 +327,7 @@ await visualizer.initialize();
 ## 下一步
 
 建议后续优化:
+
 1. 添加模型加载进度回调
 2. 支持模型加载失败的降级策略
 3. 优化多模型并行加载的性能

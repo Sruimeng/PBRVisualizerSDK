@@ -5,6 +5,7 @@
 ## 📋 Demo列表
 
 ### sdk-simple.html
+
 **基于PBR Visualizer SDK的材质编辑器**
 
 - ✅ 完整的PBR材质参数调节
@@ -61,12 +62,14 @@ materialPanel.on('materialChange', (material) => {
 ## 🎨 材质参数说明
 
 ### 基础参数
+
 - **color**: 基础颜色
 - **metalness**: 金属度 (0-1)
 - **roughness**: 粗糙度 (0-1)
 - **emissive**: 自发光颜色
 
 ### 纹理参数
+
 - **map**: 漫反射贴图
 - **normalMap**: 法线贴图
 - **roughnessMap**: 粗糙度贴图
@@ -75,6 +78,7 @@ materialPanel.on('materialChange', (material) => {
 ## 🔧 自定义配置
 
 ### 环境设置
+
 ```javascript
 const visualizer = new PBRVisualizer({
   environmentMap: 'path/to/hdr.hdr',
@@ -84,6 +88,7 @@ const visualizer = new PBRVisualizer({
 ```
 
 ### 性能优化
+
 ```javascript
 const visualizer = new PBRVisualizer({
   enableShadows: false,

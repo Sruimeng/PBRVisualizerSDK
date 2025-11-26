@@ -3,6 +3,7 @@
 ## 创建和配置3D场景
 
 1. **初始化PBRVisualizer**
+
    ```typescript
    // 创建可视化器实例
    const visualizer = new PBRVisualizer({
@@ -19,6 +20,7 @@
    ```
 
 2. **加载3D模型**
+
    ```typescript
    // 加载GLTF模型
    await visualizer.loadModel('product1', '/models/product.glb', {
@@ -29,6 +31,7 @@
    ```
 
 3. **配置环境光照**
+
    ```typescript
    // 设置HDR环境
    await visualizer.environmentSystem.setEnvironment({
@@ -41,6 +44,7 @@
    ```
 
 4. **设置Studio布光**
+
    ```typescript
    // 自动创建三点布光
    visualizer.lightSystem.createStudioLighting({
@@ -54,6 +58,7 @@
    ```
 
 5. **配置材质属性**
+
    ```typescript
    // 更新材质参数
    await visualizer.updateModel('product1', {
@@ -70,6 +75,7 @@
    ```
 
 6. **调整后处理效果**
+
    ```typescript
    // 配置SSAO接触阴影
    visualizer.postProcessSystem.setConfig({
@@ -87,6 +93,7 @@
    ```
 
 7. **相机和控制器配置**
+
    ```typescript
    // 设置相机位置
    visualizer.camera.position.set(3, 2, 5);
@@ -98,6 +105,7 @@
    ```
 
 8. **实时性能监控**
+
    ```typescript
    // 监听性能事件
    visualizer.on('performance', (stats) => {
@@ -109,6 +117,7 @@
    ```
 
 9. **截图导出**
+
    ```typescript
    // 截取当前帧
    const imageData = visualizer.captureFrame('png', 0.9);
@@ -121,6 +130,7 @@
    ```
 
 10. **状态管理操作**
+
     ```typescript
     // 批量更新多个模型
     await visualizer.batchUpdate([
@@ -142,6 +152,7 @@
 ## 工作流程验证
 
 1. **检查渲染状态**
+
    ```typescript
    if (visualizer.initialized) {
      console.log('渲染系统已就绪');
@@ -149,6 +160,7 @@
    ```
 
 2. **监控模型加载**
+
    ```typescript
    visualizer.on('modelLoaded', (data) => {
      console.log(`模型加载完成: ${data.modelId}, 耗时: ${data.loadTime}ms`);

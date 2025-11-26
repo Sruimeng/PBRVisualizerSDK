@@ -3,6 +3,7 @@
 ## 1. 准备工作
 
 ### 安装SDK
+
 ```bash
 npm install pbr-visualizer-sdk
 # 或
@@ -12,6 +13,7 @@ pnpm add pbr-visualizer-sdk
 ```
 
 ### 基本HTML结构
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -32,6 +34,7 @@ pnpm add pbr-visualizer-sdk
 ## 2. 初始化SDK
 
 ### 基础初始化
+
 ```javascript
 // main.js
 import { PBRVisualizer } from 'pbr-visualizer-sdk';
@@ -49,6 +52,7 @@ const visualizer = new PBRVisualizer({
 ```
 
 ### 高级配置
+
 ```javascript
 const visualizer = new PBRVisualizer({
     container: document.getElementById('canvas'),
@@ -83,6 +87,7 @@ const visualizer = new PBRVisualizer({
 ## 3. 加载第一个3D模型
 
 ### 基础模型加载
+
 ```javascript
 // 加载GLTF模型
 async function loadModel() {
@@ -105,6 +110,7 @@ loadModel();
 ```
 
 ### 优化模型加载
+
 ```javascript
 async function loadModelOptimized() {
     try {
@@ -133,6 +139,7 @@ async function loadModelOptimized() {
 ## 4. 配置材质和光照
 
 ### 快速材质配置
+
 ```javascript
 // 设置材质参数
 function configureMaterial(model) {
@@ -150,6 +157,7 @@ function configureMaterial(model) {
 ```
 
 ### Studio布光设置
+
 ```javascript
 // 配置Studio三点布光
 function setupStudioLighting() {
@@ -177,6 +185,7 @@ function setupStudioLighting() {
 ```
 
 ### 环境配置
+
 ```javascript
 // 设置HDR环境
 async function setupEnvironment() {
@@ -199,6 +208,7 @@ async function setupEnvironment() {
 ## 5. 设置后处理效果
 
 ### 基础后处理
+
 ```javascript
 // 配置后处理效果
 function setupPostProcessing() {
@@ -227,6 +237,7 @@ function setupPostProcessing() {
 ```
 
 ### 高级后处理
+
 ```javascript
 // 完整后处理配置
 function setupAdvancedPostProcessing() {
@@ -265,6 +276,7 @@ function setupAdvancedPostProcessing() {
 ## 6. 相机控制
 
 ### 相机设置
+
 ```javascript
 // 配置相机
 function setupCamera() {
@@ -285,6 +297,7 @@ function setupCamera() {
 ```
 
 ### 相机控制
+
 ```javascript
 // 启用/禁用相机控制
 function setupCameraControls() {
@@ -307,6 +320,7 @@ function setupCameraControls() {
 ## 7. 完整示例
 
 ### 完整的快速开始代码
+
 ```javascript
 // main.js
 import { PBRVisualizer } from 'pbr-visualizer-sdk';
@@ -365,12 +379,14 @@ setupScene();
 ## 8. 验证安装
 
 ### 检查渲染效果
+
 1. 打开浏览器控制台，查看是否有错误信息
 2. 检查页面是否正确显示了3D模型
 3. 观察性能统计面板（如果启用）
 4. 确认相机控制是否正常工作
 
 ### 调试技巧
+
 ```javascript
 // 启用调试模式
 visualizer.enableDebugMode(true);
@@ -387,12 +403,14 @@ console.log('性能信息:', performanceInfo);
 ## 9. 下一步
 
 ### 继续学习
+
 - [API初始化配置](api-setup.md) - 深入了解初始化选项
 - [基础渲染工作流](basic-rendering-workflow.md) - 掌握渲染流程
 - [材质和光照配置](material-and-lighting-configuration.md) - 学习材质和光照设置
 - [状态更新基础](state-updates-basics.md) - 了解状态管理
 
 ### 常见问题
+
 - **模型加载失败**: 检查文件路径和网络连接
 - **性能问题**: 降低渲染质量或简化场景
 - **显示异常**: 检查浏览器WebGL支持

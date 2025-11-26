@@ -64,12 +64,14 @@ interface TransitionCondition {
 ## 3. 执行流程
 
 ### 状态机创建流程
+
 1. **配置定义**: 定义状态列表、转换规则、默认效果
 2. **实例创建**: `PBRVisualizer.createStateMachine(modelId, config)`
 3. **模型绑定**: 自动绑定模型和动画
 4. **启动**: `stateMachine.start()` 进入初始状态
 
 ### 状态转换流程
+
 1. **触发转换**: `stateMachine.trigger(transitionId)` 或自动条件触发
 2. **退出当前状态**: 调用 `onExit` 回调
 3. **执行过渡效果**: 根据配置执行淡入淡出/缩放
@@ -78,6 +80,7 @@ interface TransitionCondition {
 6. **发送事件**: 发送 `transitionEnd` 事件
 
 ### 过渡效果执行流程
+
 1. **计算进度**: 基于时间计算过渡进度 (0-1)
 2. **应用缓动**: 使用缓动函数平滑进度
 3. **应用效果**:
@@ -89,22 +92,26 @@ interface TransitionCondition {
 ## 4. 设计 Rationale
 
 ### 声明式状态管理
+
 - 通过配置对象定义完整的状态机行为
 - 分离状态逻辑和渲染逻辑
 - 便于调试和维护
 
 ### 灵活的转换条件
+
 - **immediate**: 手动触发
 - **animationEnd**: 动画播放完成后自动触发
 - **timeout**: 超时后自动触发
 - **custom**: 自定义条件函数
 
 ### 可组合的过渡效果
+
 - 支持单独使用淡入淡出或缩放
 - 支持组合效果 (fadeScale)
 - 可配置缓动函数和时长
 
 ### 事件驱动架构
+
 - 提供完整的事件系统
 - 支持 `stateEnter`, `stateExit`, `transitionStart`, `transitionEnd`, `animationEnd` 事件
 - 便于UI同步和调试
@@ -281,6 +288,7 @@ stateMachine.on('transitionEnd', (event) => {
 系统提供5种预设的过渡效果配置 (`FADE_PRESETS`)：
 
 ### 强化效果预设
+
 - **`strong`**: 透明度范围 [0.2, 1]，600ms持续时间，适合明显但不突兀的切换
 - **`dramatic`**: 透明度范围 [0.1, 1]，800ms弹性缓动，戏剧化视觉效果
 - **`natural`**: 透明度范围 [0.5, 1]，500ms，自然柔和的过渡

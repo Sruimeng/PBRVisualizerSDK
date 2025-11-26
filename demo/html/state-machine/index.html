@@ -180,8 +180,12 @@
       }
 
       @keyframes pulse {
-        from { opacity: 0.6; }
-        to { opacity: 1; }
+        from {
+          opacity: 0.6;
+        }
+        to {
+          opacity: 1;
+        }
       }
 
       /* 过渡效果选项 */
@@ -301,7 +305,7 @@
 
       <!-- 信息说明 -->
       <div class="info-box">
-        <strong>功能说明：</strong><br>
+        <strong>功能说明：</strong><br />
         此Demo演示动画状态机的使用，支持两个动画状态之间的切换，
         可选择不同的过渡效果（淡入淡出、缩放等）。
       </div>
@@ -326,10 +330,10 @@
         <h3>🔄 状态切换</h3>
         <div class="state-buttons">
           <button class="state-btn active" id="state1-btn" onclick="switchToState1()">
-            动画1<br><small>NlaTrack</small>
+            动画1<br /><small>NlaTrack</small>
           </button>
           <button class="state-btn" id="state2-btn" onclick="switchToState2()">
-            动画2<br><small>NlaTrack.001</small>
+            动画2<br /><small>NlaTrack.001</small>
           </button>
         </div>
         <button id="toggle-btn" onclick="toggleStateMachine()">⏸️ 暂停</button>
@@ -372,7 +376,10 @@
           <button class="effect-option" onclick="setTransitionEffect('scale'); setDuration(500);">
             弹性缩放
           </button>
-          <button class="effect-option" onclick="setTransitionEffect('fadeScale'); setDuration(800);">
+          <button
+            class="effect-option"
+            onclick="setTransitionEffect('fadeScale'); setDuration(800);"
+          >
             组合效果
           </button>
           <button class="effect-option" onclick="setTransitionEffect('none'); setDuration(0);">

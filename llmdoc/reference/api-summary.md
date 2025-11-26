@@ -11,6 +11,7 @@ const visualizer = new PBRVisualizer(options: VisualizerOptions);
 ```
 
 **核心方法:**
+
 - `initialize(): Promise<void>` - 初始化可视化器
 - `loadModel(id: string, source: string): Promise<void>` - 加载模型
 - `updateModel(id: string, updates: ModelState): Promise<void>` - 更新模型状态
@@ -26,6 +27,7 @@ const visualizer = new PBRVisualizer(options: VisualizerOptions);
 - `updateControls(config: ControlsConfig): void` - 更新控制配置
 
 **暗角系统方法:**
+
 - `setModelVignette(modelId: string, config: Partial<VignetteConfig>): void` - 设置模型暗角
 - `createVignetteSphere(modelId: string, config: VignetteConfig): void` - 创建暗角球体（内部方法）
 - `updateVignetteSphere(modelId: string): void` - 更新暗角球体参数（内部方法）
@@ -33,6 +35,7 @@ const visualizer = new PBRVisualizer(options: VisualizerOptions);
 - `updateAllVignetteSpheres(): void` - 更新所有暗角球体位置（在渲染循环中调用）
 
 **TransformControls系统方法:**
+
 - `setModelTransformControls(modelId: string, config: Partial<TransformControlsConfig>): void` - 设置模型变换控制
 - `createTransformControlsForModel(modelId: string, config: TransformControlsConfig): void` - 创建变换控制器（内部方法）
 - `removeTransformControlsForModel(modelId: string): void` - 移除变换控制器（内部方法）
@@ -105,6 +108,7 @@ interface ModelConfig {
 后处理系统核心类，管理EffectComposer和渲染通道。
 
 **核心方法:**
+
 - `setConfig(config: Partial<PostProcessState>): void` - 设置后处理配置
 - `setEnabled(enabled: boolean): void` - 启用/禁用后处理系统
 - `render(): void` - 执行后处理渲染（自动检查isEnabled标志）
@@ -208,6 +212,7 @@ visualizer.on(event: string, callback: Function): void;
 ```
 
 **主要事件:**
+
 - `modelLoaded` - 模型加载完成
 - `error` - 错误发生
 - `performance` - 性能监控数据
@@ -218,6 +223,7 @@ visualizer.on(event: string, callback: Function): void;
 ## 3. 常用使用模式
 
 ### 初始化模式
+
 ```typescript
 const visualizer = new PBRVisualizer({
     container: document.getElementById('viewer'),
@@ -231,6 +237,7 @@ await visualizer.initialize();
 ```
 
 ### 批量更新模式
+
 ```typescript
 await visualizer.batchUpdate([
     { id: 'model1', updates: { material: { color: '#ff0000' } } },
@@ -239,6 +246,7 @@ await visualizer.batchUpdate([
 ```
 
 ### 错误处理模式
+
 ```typescript
 visualizer.on('error', (error) => {
     console.error('错误类型:', error.type);

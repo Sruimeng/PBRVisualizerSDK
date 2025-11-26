@@ -10,7 +10,9 @@ export interface NoiseSphereUniforms {
   uBgColor2: THREE.Color;
 }
 
-export function createNoiseSphereMaterial(initial?: Partial<NoiseSphereUniforms>): THREE.RawShaderMaterial {
+export function createNoiseSphereMaterial(
+  initial?: Partial<NoiseSphereUniforms>,
+): THREE.RawShaderMaterial {
   const uniforms = {
     uResolution: { value: initial?.uResolution ?? new THREE.Vector2(1024, 1024) },
     uTime: { value: initial?.uTime ?? 0 },
@@ -18,7 +20,7 @@ export function createNoiseSphereMaterial(initial?: Partial<NoiseSphereUniforms>
     uRadius: { value: initial?.uRadius ?? 0.75 },
     uNoise: { value: initial?.uNoise ?? 0.15 },
     uBgColor1: { value: initial?.uBgColor1 ?? new THREE.Color(0x0a0e2a) },
-    uBgColor2: { value: initial?.uBgColor2 ?? new THREE.Color(0x4a6fa5) }
+    uBgColor2: { value: initial?.uBgColor2 ?? new THREE.Color(0x4a6fa5) },
   };
 
   const vertexShader = `
@@ -66,7 +68,6 @@ void main(){
     fragmentShader,
     depthWrite: false,
     depthTest: false,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 }
-

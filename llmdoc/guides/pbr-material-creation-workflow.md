@@ -5,6 +5,7 @@
 ### 创建基础PBR材质
 
 1. **初始化材质系统**
+
    ```typescript
    // 创建材质系统实例
    const materialSystem = new MaterialSystem(renderer);
@@ -15,6 +16,7 @@
    ```
 
 2. **创建自定义材质**
+
    ```typescript
    // 基础金属材质
    const metalMaterial = materialSystem.createMaterial('metal_material', {
@@ -36,6 +38,7 @@
 ### 使用材质预设
 
 1. **应用内置预设**
+
    ```typescript
    // 获取预设材质配置
    const presets = ['metal', 'plastic', 'wood', 'glass', 'fabric'];
@@ -48,6 +51,7 @@
    ```
 
 2. **创建材质变体**
+
    ```typescript
    // 基础配置
    const baseConfig = {
@@ -74,6 +78,7 @@
 ### 纹理映射配置
 
 1. **法线贴图材质**
+
    ```typescript
    const normalMappedMaterial = materialSystem.createMaterial('normal_material', {
      color: '#cccccc',
@@ -85,6 +90,7 @@
    ```
 
 2. **完整纹理材质**
+
    ```typescript
    const texturedMaterial = materialSystem.createMaterial('textured_material', {
      color: '#ffffff',
@@ -117,6 +123,7 @@
 ### 特殊材质类型
 
 1. **玻璃材质**（已增强支持）
+
    ```typescript
    const glassMaterial = materialSystem.createMaterial('glass_material', {
      color: '#ffffff',
@@ -141,6 +148,7 @@
    ```
 
 2. **发光材质**（已支持发光贴图）
+
    ```typescript
    const emissiveMaterial = materialSystem.createMaterial('emissive_material', {
      color: '#444444',
@@ -170,6 +178,7 @@
 ### 实时参数调整
 
 1. **单个材质更新**
+
    ```typescript
    // 更新材质粗糙度
    materialSystem.updateMaterial('metal_material', {
@@ -184,6 +193,7 @@
    ```
 
 2. **批量材质更新**
+
    ```typescript
    // 批量更新多个材质参数
    const updates = {
@@ -203,6 +213,7 @@
 ### 材质状态管理
 
 1. **获取材质配置**
+
    ```typescript
    // 获取当前材质配置
    const config = materialSystem.getMaterialConfig('material_id');
@@ -230,6 +241,7 @@
 ### 材质优化
 
 1. **模型材质优化**
+
    ```typescript
    // 自动优化模型材质
    materialSystem.optimizeModelAssets(modelObject, environmentTexture);
@@ -242,6 +254,7 @@
    ```
 
 2. **纹理优化**
+
    ```typescript
    // 获取材质统计信息
    const stats = materialSystem.getMaterialStats();
@@ -254,6 +267,7 @@
 ### 缓存管理
 
 1. **缓存监控**
+
    ```typescript
    // 监控缓存状态
    setInterval(() => {
@@ -263,6 +277,7 @@
    ```
 
 2. **手动清理**
+
    ```typescript
    // 清理特定材质
    const materialKey = generateCacheKey(config);
@@ -279,6 +294,7 @@
 ### 材质参数规范
 
 1. **金属材质**
+
    ```typescript
    const metalConfig = {
      color: '#888888',     // 中性灰色
@@ -289,6 +305,7 @@
    ```
 
 2. **塑料材质**
+
    ```typescript
    const plasticConfig = {
      color: '#ffffff',     // 纯白色
@@ -311,11 +328,13 @@
 ### 纹理配置建议
 
 1. **法线贴图**
+
    - 分辨率: 建议512x512到2048x2048
    - 格式: 支持8位或16位法线贴图
    - 缩放: normalScale建议0.5-2.0
 
 2. **AO贴图**
+
    - 分辨率: 建议512x512到1024x1024
    - 强度: aoMapIntensity建议0.5-1.5
    - 用途: 增强接触阴影效果
@@ -330,6 +349,7 @@
 ### 材质调试
 
 1. **材质信息查看**
+
    ```typescript
    // 查看材质详细信息
    function debugMaterial(materialId: string) {
@@ -347,6 +367,7 @@
    ```
 
 2. **性能问题排查**
+
    ```typescript
    // 检查材质性能影响
    function checkMaterialPerformance() {
@@ -365,11 +386,13 @@
 ### 常见问题解决
 
 1. **纹理显示异常**
+
    - 检查纹理路径是否正确
    - 确认纹理格式支持
    - 验证纹理加载状态
 
 2. **材质颜色错误**
+
    - 检查color参数格式
    - 确认色彩空间设置
    - 验证环境光照强度

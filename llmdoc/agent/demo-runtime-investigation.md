@@ -21,16 +21,19 @@
 根据代码分析，`demo/src/sdk-simple.ts` 在浏览器中出现运行时错误的原因主要有以下几点：
 
 1. **TypeScript 文件类型导入问题**
+
    - HTML 直接使用 `<script type="module" src="../../src/sdk-simple.ts"></script>` 引入 TypeScript 文件
    - 浏览器原生不支持 `.ts` 文件执行，需要 Vite 开发服务器进行实时编译
    - 仅在 `pnpm dev`（Vite 开发模式）下工作，直接打开 HTML 文件会失败
 
 2. **SDK 导入路径配置**
+
    - 文件第 1 行：`import { PBRVisualizer } from '@sruim/pbr-visualizer-sdk'`
    - demo/tsconfig.json 第 13 行配置了路径别名：`"@sruim/pbr-visualizer-sdk": ["src/index.ts"]`
    - 此路径别名仅在 Vite 开发环境下有效，在生产构建后不适用
 
 3. **根 tsconfig.json 排除了 demo 目录**
+
    - 第 35-39 行：`"exclude": ["node_modules", "dist", "demo"]`
    - 这意味着根编译器不会处理 demo 目录中的代码
    - demo/tsconfig.json 的路径别名在开发时依赖于 Vite 的处理
@@ -51,6 +54,7 @@
 **为什么会出现运行时错误**
 
 1. 如果直接在浏览器打开 `demo/html/material-editor/sdk-simple.html` 文件
+
    - 错误：`Failed to resolve module specifier '@sruim/pbr-visualizer-sdk'`
    - 原因：浏览器无法处理 `.ts` 文件编译和路径别名解析
 
@@ -109,6 +113,7 @@ pnpm preview
 ### 工作流程说明
 
 1. **开发时 (pnpm dev)**
+
    - Vite 启动 HTTP 服务器（支持跨域和 ES Module）
    - 实时编译 TypeScript 文件
    - 处理路径别名 (@sruim/pbr-visualizer-sdk → src/index.ts)

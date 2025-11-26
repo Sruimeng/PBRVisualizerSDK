@@ -28,6 +28,7 @@ const editor = new MaterialEditor();
 ### 3. 基本操作
 
 材质编辑器提供模块化的参数控制：
+
 - **颜色控制**: 通过HTML input元素控制材质颜色
 - **滑块控制**: 金属度、粗糙度、环境贴图强度的实时调节
 - **预设应用**: 6种内置预设的快速应用
@@ -38,6 +39,7 @@ const editor = new MaterialEditor();
 ### 基础参数
 
 #### 颜色 (Color)
+
 - **用途**: 控制材质的基础颜色
 - **范围**: RGB颜色值
 - **影响**: 决定材质的基础反射和吸收特性
@@ -50,6 +52,7 @@ editor.updateMaterial({
 ```
 
 #### 金属度 (Metalness)
+
 - **范围**: 0-1
 - **0**: 完全非金属（塑料、织物等）
 - **1**: 完全金属（金属材质）
@@ -68,6 +71,7 @@ editor.updateMaterial({
 ```
 
 #### 粗糙度 (Roughness)
+
 - **范围**: 0-1
 - **0**: 完全光滑（镜面反射）
 - **1**: 完全粗糙（漫反射）
@@ -86,6 +90,7 @@ editor.updateMaterial({
 ```
 
 #### 环境贴图强度 (Env Map Intensity)
+
 - **范围**: 0-2
 - **用途**: 控制环境反射的强度
 - **影响**: 材质对环境的反射程度
@@ -99,6 +104,7 @@ editor.updateMaterial({
 ### 高级参数
 
 #### 清漆层 (Clearcoat)
+
 - **范围**: 0-1
 - **用途**: 模拟清漆涂层效果
 - **应用**: 汽车漆面、高光塑料
@@ -112,6 +118,7 @@ editor.updateMaterial({
 ```
 
 #### 透射率 (Transmission)
+
 - **范围**: 0-1
 - **用途**: 控制材质的透光性
 - **应用**: 玻璃、透明塑料
@@ -190,12 +197,14 @@ const MATERIAL_PRESETS = {
 ### MaterialEditor类
 
 #### 构造函数
+
 ```typescript
 constructor()
 // 自动初始化材质编辑器
 ```
 
 #### 更新材质参数
+
 ```typescript
 private updateMaterial(params: MaterialParams): Promise<void>
 // MaterialParams类型定义：
@@ -208,24 +217,28 @@ interface MaterialParams {
 ```
 
 #### 预设应用
+
 ```typescript
 public applyPreset(presetName: string): Promise<void>
 // 应用预设并同步UI
 ```
 
 #### 重置材质
+
 ```typescript
 public resetMaterial(): Promise<void>
 // 重置到默认材质状态
 ```
 
 #### 随机材质
+
 ```typescript
 public randomizeMaterial(): Promise<void>
 // 生成随机材质参数
 ```
 
 #### Debug功能方法
+
 ```typescript
 public toggleDebug(): void
 // 一键切换Debug模式，自动更新UI按钮状态
@@ -269,6 +282,7 @@ console.log(`FPS: ${performance.fps}, Draw Calls: ${performance.drawCalls}`);
 ### 材质优化建议
 
 1. **低端设备**:
+
    - 使用低质量材质预设
    - 减少后处理效果
    - 降低环境贴图分辨率
@@ -377,31 +391,38 @@ const editor = new MaterialEditor();
 ## 常见问题
 
 ### Q: 材质调节没有反应？
+
 A: 确保HTML控件ID正确，检查控制台错误信息。材质编辑器会自动处理参数转换和验证。
 
 ### Q: 性能太低怎么办？
+
 A: 切换到低质量模式，关闭部分后处理效果，或降低环境贴图分辨率。检查控制台性能统计信息。
 
 ### Q: 如何保存自定义材质？
+
 A: 通过visualizer.getModelState()获取当前材质配置，然后导出为JSON文件。
 
 ### Q: 材质预设不够用？
+
 A: 可以在sdk-simple.ts中扩展MATERIAL_PRESETS对象，添加自定义预设。
 
 ## 最佳实践
 
 1. **材质创作流程**:
+
    - 从相似的预设开始
    - 逐步调整参数
    - 实时观察效果
    - 导出配置保存
 
 2. **性能管理**:
+
    - 定期检查性能指标
    - 根据设备性能调整设置
    - 合理使用高级材质特性
 
 3. **代码组织**:
+
    - 利用模块化设计
    - 使用TypeScript类型检查
    - 遵循错误处理最佳实践

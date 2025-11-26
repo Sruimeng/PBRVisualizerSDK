@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
-export function createEquirectToCubeMaterial(equirectTexture: THREE.Texture): THREE.RawShaderMaterial {
+export function createEquirectToCubeMaterial(
+  equirectTexture: THREE.Texture,
+): THREE.RawShaderMaterial {
   const vertexShader = `
 precision highp float;
 attribute vec3 position;
@@ -36,13 +38,12 @@ void main(){
   return new THREE.RawShaderMaterial({
     uniforms: {
       uCamPos: { value: new THREE.Vector3() },
-      envMap: { value: equirectTexture }
+      envMap: { value: equirectTexture },
     },
     vertexShader,
     fragmentShader,
     side: THREE.BackSide,
     depthWrite: false,
-    depthTest: false
+    depthTest: false,
   });
 }
-

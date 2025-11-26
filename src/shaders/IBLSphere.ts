@@ -13,7 +13,9 @@ export interface IBLSphereUniforms {
   uBright: number;
 }
 
-export function createIBLSphereMaterial(initial?: Partial<IBLSphereUniforms>): THREE.RawShaderMaterial {
+export function createIBLSphereMaterial(
+  initial?: Partial<IBLSphereUniforms>,
+): THREE.RawShaderMaterial {
   const uniforms: { [key: string]: { value: any } } = {
     uCamPos: { value: initial?.uCamPos ?? new THREE.Vector3(0, 0, 0) },
     uTime: { value: initial?.uTime ?? 0 },
@@ -24,7 +26,7 @@ export function createIBLSphereMaterial(initial?: Partial<IBLSphereUniforms>): T
     uBgColor2: { value: initial?.uBgColor2 ?? new THREE.Color(0x4a6fa5) },
     uAxis: { value: initial?.uAxis ?? new THREE.Vector3(0, 0, 1) },
     uVignette: { value: initial?.uVignette ?? 0.85 },
-    uBright: { value: initial?.uBright ?? 0.10 }
+    uBright: { value: initial?.uBright ?? 0.1 },
   };
 
   const vertexShader = `
@@ -84,6 +86,6 @@ void main() {
     fragmentShader,
     depthWrite: false,
     depthTest: false,
-    side: THREE.BackSide
+    side: THREE.BackSide,
   });
 }

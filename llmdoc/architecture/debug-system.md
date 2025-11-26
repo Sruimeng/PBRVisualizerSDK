@@ -59,27 +59,32 @@
 ## 4. 设计要点
 
 ### 模块独立性
+
 - DebugSystem 是Debug功能的统一入口，不修改核心系统行为
 - LightSystem 和 PostProcessSystem 的Debug API 独立，可单独使用或集成到DebugSystem
 - Helper和Buffer可视化功能自包含，不影响渲染质量
 
 ### 配置与状态同步
+
 - DebugConfig 定义配置，DebugState 用于状态查询
 - syncUIControls() 确保UI与系统状态保持同步，防止不一致
 - lil-gui的onChange回调与DebugSystem方法绑定，实现双向同步
 
 ### 性能考虑
+
 - Helper创建是按需的（createAllHelpers），不自动创建所有灯光Helper
 - requestAnimationFrame循环仅在调试模式启用且有GUI时执行
 - Buffer可视化模式切换不需要重新编译着色器，通过SSAOPass的output属性实时切换
 
 ### Helper类型支持
+
 - RectAreaLightHelper：矩形区域灯光，特别用于Studio三点布光的可视化
 - PointLightHelper：点光源可视化
 - SpotLightHelper：聚光灯可视化
 - DirectionalLightHelper：平行光可视化
 
 ### Buffer输出模式
+
 - **Default (0)**: 合成后的最终输出（关闭Buffer调试）
 - **SSAO (1)**: 原始SSAO纹理（查看阴影效果）
 - **Blur (2)**: 模糊后的SSAO（查看模糊效果）

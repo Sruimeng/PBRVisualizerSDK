@@ -302,4 +302,7 @@ console.log('金属预设详情:', presetDetails);
 const presetConfig = visualizer.materialSystem.exportPreset('自定义材质');
 console.log('预设配置:', presetConfig);
 ```
+
+```
+
 ```

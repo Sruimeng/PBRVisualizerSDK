@@ -87,12 +87,14 @@ const config = {
 ## 预设配置详解
 
 ### 1. `strong` - 强化淡入淡出
+
 - **透明度范围**: [0.2, 1] (20% - 100%)
 - **过渡时间**: 600ms
 - **适用场景**: 需要明显但不突兀的状态切换
 - **特点**: 保持自然感的同时增强可见度
 
 ### 2. `dramatic` - 戏剧化效果
+
 - **透明度范围**: [0.1, 1] (10% - 100%)
 - **过渡时间**: 800ms
 - **缓动函数**: 弹性缓动
@@ -100,18 +102,21 @@ const config = {
 - **特点**: 最强烈的视觉冲击，配合缩放和弹性效果
 
 ### 3. `natural` - 自然柔和
+
 - **透明度范围**: [0.5, 1] (50% - 100%)
 - **过渡时间**: 500ms
 - **适用场景**: 日常状态切换，保持沉浸感
 - **特点**: 最自然的过渡效果
 
 ### 4. `quick` - 快速切换
+
 - **透明度范围**: [0.4, 1] (40% - 100%)
 - **过渡时间**: 300ms
 - **适用场景**: 快节奏动作、连击等
 - **特点**: 快速但明显
 
 ### 5. `character` - 角色动画专用
+
 - **透明度范围**: [0.25, 1] (25% - 100%)
 - **过渡时间**: 600ms
 - **缩放范围**: [0.92, 1.05] (轻微放大)
@@ -121,6 +126,7 @@ const config = {
 ## 角色动画切换最佳实践
 
 ### 待机 → 动作切换
+
 ```typescript
 {
   id: 'idle_to_action',
@@ -135,6 +141,7 @@ const config = {
 ```
 
 ### 动作 → 待机切换
+
 ```typescript
 {
   id: 'action_to_idle',
@@ -146,6 +153,7 @@ const config = {
 ```
 
 ### 连续动作切换
+
 ```typescript
 {
   id: 'walk_to_run',
@@ -159,6 +167,7 @@ const config = {
 ## 组合效果使用
 
 ### 淡入淡出 + 缩放
+
 ```typescript
 const fadeScaleEffect = {
   type: TransitionEffectType.FadeScale,
@@ -170,6 +179,7 @@ const fadeScaleEffect = {
 ```
 
 ### 自定义缓动函数
+
 ```typescript
 const elasticEffect = {
   type: TransitionEffectType.Fade,
@@ -189,6 +199,7 @@ const elasticEffect = {
 ## 调试技巧
 
 启用调试模式查看过渡详情：
+
 ```typescript
 const config = {
   // ... 其他配置
@@ -197,6 +208,7 @@ const config = {
 ```
 
 调试信息会显示：
+
 - 过渡进度
 - 当前透明度值
 - 动画切换时机
@@ -205,16 +217,19 @@ const config = {
 ## 故障排除
 
 ### 效果不明显
+
 - 检查opacityRange配置
 - 确认材质支持透明度
 - 验证渲染器设置
 
 ### 过渡生硬
+
 - 增加过渡时间
 - 使用更平滑的缓动函数
 - 调整透明度范围
 
 ### 性能问题
+
 - 减少同时过渡的状态机数量
 - 使用更简单的效果类型
 - 优化过渡时间
@@ -229,5 +244,6 @@ const config = {
 - **简化开发**: 使用预设快速实现效果
 
 更多详细信息请参考：
+
 - [动画状态机系统架构](../architecture/animation-state-machine.md)
 - [API参考](../reference/api-summary.md)
