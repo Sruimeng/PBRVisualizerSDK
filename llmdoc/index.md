@@ -40,6 +40,12 @@
 - 初始化同步和运行时性能优化
 - 模块化效果管理和性能监控集成
 
+**[Debug系统架构](architecture/debug-system.md)** - 调试框架和可视化工具
+- 灯光Helper可视化（4种Helper类型）
+- Buffer可视化调试（5种输出模式）
+- lil-gui集成的实时调试面板
+- 性能监控集成
+
 ## 📖 操作指南 (Guides)
 
 **[快速开始](guides/quick-start.md)** - 5分钟快速上手
@@ -115,6 +121,12 @@
 - 开发环境配置
 - 项目结构说明
 - 构建和部署流程
+
+**[Debug模式使用指南](guides/debug-mode-usage.md)** - 调试工具使用教程
+- 灯光Helper可视化调试
+- Buffer输出模式调试
+- 性能监控和优化
+- lil-gui面板控制
 
 ## 📚 参考资料 (Reference)
 
@@ -206,10 +218,10 @@
 
 ## 📊 文档统计
 
-- **总文档数**: 38个（含索引）
+- **总文档数**: 40个（含索引）
 - **概述文档**: 2个
-- **架构文档**: 4个
-- **指南文档**: 15个
+- **架构文档**: 5个（新增Debug系统）
+- **指南文档**: 16个（新增Debug模式使用）
 - **参考文档**: 8个
 - **分析报告**: 8个
 - **代码示例**: 包含完整的使用示例和最佳实践
@@ -222,4 +234,4 @@
 - **深度学习**: [项目概览](overview/project-overview.md) → [核心渲染系统](architecture/core-rendering-system.md) → [状态管理架构](architecture/state-management.md)
 - **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [Demo系统状态](reference/demo-system-status.md) → [功能对齐调查报告](agent/feature-alignment-investigation.md) → [智能分析报告](agent/)
 - **材质设计**: [材质编辑器使用指南](guides/material-editor-usage.md) → [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [PBR材质系统](architecture/pbr-material-system.md)
-- **开发调试**: [Demo运行时调查报告](agent/demo-runtime-investigation.md) → [编码约定](reference/coding-conventions.md) → [Git约定](reference/git-conventions.md)
+- **开发调试**: [Debug模式使用指南](guides/debug-mode-usage.md) → [Debug系统架构](architecture/debug-system.md) → [Demo运行时调查报告](agent/demo-runtime-investigation.md) → [编码约定](reference/coding-conventions.md) → [Git约定](reference/git-conventions.md)

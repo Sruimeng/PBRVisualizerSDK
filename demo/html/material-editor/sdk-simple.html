@@ -117,6 +117,12 @@
         border-color: #4af;
       }
 
+      button.active {
+        background: rgba(68, 170, 255, 0.3);
+        border-color: #4af;
+        color: #4af;
+      }
+
       /* 预设按钮组 */
       .presets {
         display: grid;
@@ -243,6 +249,14 @@
         <h3>操作</h3>
         <button onclick="resetMaterial()">重置材质</button>
         <button onclick="randomizeMaterial()">随机材质</button>
+      </div>
+
+      <!-- 调试功能 -->
+      <div class="control-group">
+        <h3>🔧 调试工具</h3>
+        <button id="debug-toggle-btn" onclick="toggleDebugMode()">🔧 开启调试</button>
+        <button id="light-helper-btn" onclick="toggleLightHelpers()">💡 显示灯光</button>
+        <button id="buffer-mode-btn" onclick="cycleBufferMode()">🖼️ 默认</button>
       </div>
     </div>
 

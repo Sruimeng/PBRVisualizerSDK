@@ -3,7 +3,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { SSAOPass } from 'three/examples/jsm/postprocessing/SSAOPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { PostProcessState, SSAOConfig, BloomConfig, ToneMappingConfig, AntialiasingConfig } from '../types';
+import { PostProcessState, SSAOConfig, BloomConfig, ToneMappingConfig, AntialiasingConfig, SSAOOutputMode } from '../types';
 
 /**
  * 后处理系统
@@ -35,6 +35,9 @@ export class PostProcessSystem {
 
     // 性能监控
     private lastRenderTime = 0;
+
+    // Buffer可视化模式
+    private currentOutputMode: SSAOOutputMode = SSAOOutputMode.Default;
 
     constructor(
         renderer: THREE.WebGLRenderer,
@@ -296,6 +299,81 @@ export class PostProcessSystem {
      */
     public captureFrame(format: 'png' | 'jpeg' = 'png', quality = 0.9): string {
         return this.composer.renderer.domElement.toDataURL(`image/${format}`, quality);
+    }
+
+    // ========================
+    // Buffer可视化调试功能
+    // ========================
+
+    /**
+     * 设置SSAO输出模式（用于Buffer可视化）
+     * @param mode - SSAOOutputMode枚举值
+     */
+    public setSSAOOutputMode(mode: SSAOOutputMode): void {
+        if (!this.ssaoPass) {
+            console.warn('SSAOPass not available');
+            return;
+        }
+
+        this.currentOutputMode = mode;
+        // SSAOPass的output属性对应THREE.SSAOPass.OUTPUT枚举
+        // 类型安全转换：我们的SSAOOutputMode枚举值与SSAOPass.OUTPUT一一对应
+        (this.ssaoPass as any).output = mode;
+
+        console.log(`SSAO output mode set to: ${SSAOOutputMode[mode]}`);
+    }
+
+    /**
+     * 获取当前SSAO输出模式
+     */
+    public getSSAOOutputMode(): SSAOOutputMode {
+        return this.currentOutputMode;
+    }
+
+    /**
+     * 获取所有可用的输出模式
+     */
+    public getAvailableOutputModes(): Array<{ name: string; value: SSAOOutputMode }> {
+        return [
+            { name: '默认（合成）', value: SSAOOutputMode.Default },
+            { name: 'SSAO纹理', value: SSAOOutputMode.SSAO },
+            { name: '模糊SSAO', value: SSAOOutputMode.Blur },
+            { name: '深度Buffer', value: SSAOOutputMode.Depth },
+            { name: '法线Buffer', value: SSAOOutputMode.Normal }
+        ];
+    }
+
+    /**
+     * 切换到下一个输出模式
+     */
+    public cycleOutputMode(): SSAOOutputMode {
+        const modes = Object.values(SSAOOutputMode).filter(v => typeof v === 'number') as SSAOOutputMode[];
+        const currentIndex = modes.indexOf(this.currentOutputMode);
+        const nextIndex = (currentIndex + 1) % modes.length;
+        const nextMode = modes[nextIndex];
+        this.setSSAOOutputMode(nextMode);
+        return nextMode;
+    }
+
+    /**
+     * 重置为默认输出模式
+     */
+    public resetOutputMode(): void {
+        this.setSSAOOutputMode(SSAOOutputMode.Default);
+    }
+
+    /**
+     * 获取SSAOPass引用（用于调试）
+     */
+    public getSSAOPass(): SSAOPass | null {
+        return this.ssaoPass;
+    }
+
+    /**
+     * 获取EffectComposer引用（用于调试）
+     */
+    public getComposer(): EffectComposer {
+        return this.composer;
     }
 
     /**

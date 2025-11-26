@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
-import { LightState } from '../types';
+import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper.js';
+import { LightState, LightHelperInfo } from '../types';
 
 /**
  * 灯光系统
@@ -17,10 +18,20 @@ export class LightSystem {
     private lights: Map<string, THREE.Light> = new Map();
     private lightConfigs: Map<string, LightState> = new Map();
 
+    // 灯光Helper管理
+    private lightHelpers: Map<string, THREE.Object3D> = new Map();
+    private helpersEnabled = false;
+    private helperScale = 1.0;
+
     // Studio三点布光系统
     private keyLight?: THREE.RectAreaLight;
     private fillLight?: THREE.RectAreaLight;
     private rimLight?: THREE.RectAreaLight;
+
+    // Studio灯光Helper
+    private keyLightHelper?: RectAreaLightHelper;
+    private fillLightHelper?: RectAreaLightHelper;
+    private rimLightHelper?: RectAreaLightHelper;
 
     // 模型边界信息（用于自适应灯光）
     private modelBounds?: {
@@ -409,10 +420,242 @@ export class LightSystem {
         this.removeStudioLighting();
     }
 
+    // ========================
+    // 灯光Helper调试功能
+    // ========================
+
+    /**
+     * 启用/禁用所有灯光Helper
+     */
+    public setHelpersEnabled(enabled: boolean): void {
+        this.helpersEnabled = enabled;
+
+        // 更新所有自定义灯光Helper
+        this.lightHelpers.forEach((helper) => {
+            helper.visible = enabled;
+        });
+
+        // 更新Studio灯光Helper
+        if (this.keyLightHelper) this.keyLightHelper.visible = enabled;
+        if (this.fillLightHelper) this.fillLightHelper.visible = enabled;
+        if (this.rimLightHelper) this.rimLightHelper.visible = enabled;
+    }
+
+    /**
+     * 设置Helper缩放
+     */
+    public setHelperScale(scale: number): void {
+        this.helperScale = scale;
+        // 注意：RectAreaLightHelper不支持缩放，但保留此方法用于未来扩展
+    }
+
+    /**
+     * 为指定灯光创建Helper
+     */
+    public createHelperForLight(id: string): THREE.Object3D | null {
+        const light = this.lights.get(id);
+        if (!light) {
+            console.warn(`Light with id '${id}' not found`);
+            return null;
+        }
+
+        // 移除已存在的Helper
+        this.removeHelperForLight(id);
+
+        let helper: THREE.Object3D | null = null;
+
+        if (light instanceof THREE.RectAreaLight) {
+            helper = new RectAreaLightHelper(light);
+        } else if (light instanceof THREE.PointLight) {
+            helper = new THREE.PointLightHelper(light, this.helperScale);
+        } else if (light instanceof THREE.SpotLight) {
+            helper = new THREE.SpotLightHelper(light);
+        } else if (light instanceof THREE.DirectionalLight) {
+            helper = new THREE.DirectionalLightHelper(light, this.helperScale);
+        }
+
+        if (helper) {
+            helper.visible = this.helpersEnabled;
+            this.scene.add(helper);
+            this.lightHelpers.set(id, helper);
+        }
+
+        return helper;
+    }
+
+    /**
+     * 移除指定灯光的Helper
+     */
+    public removeHelperForLight(id: string): void {
+        const helper = this.lightHelpers.get(id);
+        if (helper) {
+            this.scene.remove(helper);
+            // 如果是可dispose的对象，调用dispose
+            if ('dispose' in helper && typeof helper.dispose === 'function') {
+                (helper as any).dispose();
+            }
+            this.lightHelpers.delete(id);
+        }
+    }
+
+    /**
+     * 为所有灯光创建Helper
+     */
+    public createAllHelpers(): void {
+        // 为自定义灯光创建Helper
+        this.lights.forEach((_, id) => {
+            this.createHelperForLight(id);
+        });
+
+        // 为Studio灯光创建Helper
+        this.createStudioLightHelpers();
+    }
+
+    /**
+     * 创建Studio三点布光的Helper
+     */
+    private createStudioLightHelpers(): void {
+        // 移除现有Helper
+        this.removeStudioLightHelpers();
+
+        if (this.keyLight) {
+            this.keyLightHelper = new RectAreaLightHelper(this.keyLight);
+            this.keyLightHelper.visible = this.helpersEnabled;
+            this.scene.add(this.keyLightHelper);
+        }
+
+        if (this.fillLight) {
+            this.fillLightHelper = new RectAreaLightHelper(this.fillLight);
+            this.fillLightHelper.visible = this.helpersEnabled;
+            this.scene.add(this.fillLightHelper);
+        }
+
+        if (this.rimLight) {
+            this.rimLightHelper = new RectAreaLightHelper(this.rimLight);
+            this.rimLightHelper.visible = this.helpersEnabled;
+            this.scene.add(this.rimLightHelper);
+        }
+    }
+
+    /**
+     * 移除Studio灯光Helper
+     */
+    private removeStudioLightHelpers(): void {
+        if (this.keyLightHelper) {
+            this.scene.remove(this.keyLightHelper);
+            this.keyLightHelper.dispose();
+            this.keyLightHelper = undefined;
+        }
+        if (this.fillLightHelper) {
+            this.scene.remove(this.fillLightHelper);
+            this.fillLightHelper.dispose();
+            this.fillLightHelper = undefined;
+        }
+        if (this.rimLightHelper) {
+            this.scene.remove(this.rimLightHelper);
+            this.rimLightHelper.dispose();
+            this.rimLightHelper = undefined;
+        }
+    }
+
+    /**
+     * 移除所有Helper
+     */
+    public removeAllHelpers(): void {
+        // 移除自定义灯光Helper
+        this.lightHelpers.forEach((helper) => {
+            this.scene.remove(helper);
+            if ('dispose' in helper && typeof helper.dispose === 'function') {
+                (helper as any).dispose();
+            }
+        });
+        this.lightHelpers.clear();
+
+        // 移除Studio灯光Helper
+        this.removeStudioLightHelpers();
+    }
+
+    /**
+     * 切换指定灯光的Helper显示
+     */
+    public toggleLightHelper(id: string): boolean {
+        const helper = this.lightHelpers.get(id);
+        if (helper) {
+            helper.visible = !helper.visible;
+            return helper.visible;
+        }
+        return false;
+    }
+
+    /**
+     * 获取所有灯光Helper信息
+     */
+    public getAllHelperInfo(): LightHelperInfo[] {
+        const info: LightHelperInfo[] = [];
+
+        // 自定义灯光Helper
+        this.lightHelpers.forEach((helper, id) => {
+            const config = this.lightConfigs.get(id);
+            info.push({
+                id,
+                type: config?.type || 'unknown',
+                visible: helper.visible
+            });
+        });
+
+        // Studio灯光Helper
+        if (this.keyLightHelper) {
+            info.push({
+                id: 'studio_keyLight',
+                type: 'rectAreaLight',
+                visible: this.keyLightHelper.visible
+            });
+        }
+        if (this.fillLightHelper) {
+            info.push({
+                id: 'studio_fillLight',
+                type: 'rectAreaLight',
+                visible: this.fillLightHelper.visible
+            });
+        }
+        if (this.rimLightHelper) {
+            info.push({
+                id: 'studio_rimLight',
+                type: 'rectAreaLight',
+                visible: this.rimLightHelper.visible
+            });
+        }
+
+        return info;
+    }
+
+    /**
+     * 获取Helper是否启用
+     */
+    public getHelpersEnabled(): boolean {
+        return this.helpersEnabled;
+    }
+
+    /**
+     * 获取Studio灯光引用（用于调试）
+     */
+    public getStudioLights(): {
+        keyLight?: THREE.RectAreaLight;
+        fillLight?: THREE.RectAreaLight;
+        rimLight?: THREE.RectAreaLight;
+    } {
+        return {
+            keyLight: this.keyLight,
+            fillLight: this.fillLight,
+            rimLight: this.rimLight
+        };
+    }
+
     /**
      * 销毁灯光系统
      */
     public dispose(): void {
+        this.removeAllHelpers();
         this.clearAllLights();
         console.log('LightSystem disposed');
     }

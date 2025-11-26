@@ -339,4 +339,101 @@ export interface VisualizerOptions {
   quality?: Partial<QualityConfig>;
   // 是否开启调试信息；默认：false
   debug?: boolean;
+  // 调试配置；默认：undefined
+  debugConfig?: DebugConfig;
+}
+
+// ========================
+// Debug 系统类型定义
+// ========================
+
+/**
+ * SSAO Buffer 可视化模式
+ * 对应 Three.js SSAOPass.OUTPUT 枚举
+ */
+export enum SSAOOutputMode {
+  /** 默认合成模式 - 将SSAO与原场景合并 */
+  Default = 0,
+  /** SSAO纹理 - 显示原始SSAO计算结果 */
+  SSAO = 1,
+  /** 模糊SSAO - 显示模糊后的SSAO纹理 */
+  Blur = 2,
+  /** 深度Buffer - 显示场景深度图 */
+  Depth = 3,
+  /** 法线Buffer - 显示法线贴图 */
+  Normal = 4
+}
+
+/**
+ * 调试模式配置
+ */
+export interface DebugConfig {
+  // 是否启用调试模式；默认：false
+  enabled: boolean;
+  // 是否显示调试UI面板；默认：true
+  showPanel: boolean;
+  // 灯光Helper配置
+  lightHelpers: LightHelperConfig;
+  // Buffer可视化配置
+  bufferVisualization: BufferVisualizationConfig;
+  // 性能监控配置
+  performance: DebugPerformanceConfig;
+}
+
+/**
+ * 灯光Helper配置
+ */
+export interface LightHelperConfig {
+  // 是否显示灯光Helper；默认：false
+  enabled: boolean;
+  // 要显示的灯光ID列表；默认：[] (空表示显示所有)
+  lightIds: string[];
+  // Helper大小缩放；默认：1.0
+  scale: number;
+}
+
+/**
+ * Buffer可视化配置
+ */
+export interface BufferVisualizationConfig {
+  // 是否启用Buffer可视化；默认：false
+  enabled: boolean;
+  // 当前显示模式；默认：Default
+  mode: SSAOOutputMode;
+}
+
+/**
+ * 调试性能配置
+ */
+export interface DebugPerformanceConfig {
+  // 是否在面板中显示性能统计；默认：true
+  showStats: boolean;
+  // 是否显示渲染通道耗时；默认：false
+  showPassTimings: boolean;
+}
+
+/**
+ * 调试系统状态（只读）
+ */
+export interface DebugState {
+  // 是否启用调试模式
+  enabled: boolean;
+  // 当前活动的灯光Helper ID列表
+  activeLightHelpers: string[];
+  // 当前Buffer可视化模式
+  bufferMode: SSAOOutputMode;
+  // UI面板是否可见
+  panelVisible: boolean;
+}
+
+/**
+ * 灯光Helper信息
+ */
+export interface LightHelperInfo {
+  // 灯光ID
+  id: string;
+  // 灯光类型
+  type: string;
+  // Helper是否可见
+  visible: boolean;
 }

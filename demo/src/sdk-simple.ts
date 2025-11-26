@@ -1,4 +1,4 @@
-import { PBRVisualizer } from '@sruim/pbr-visualizer-sdk';
+import { PBRVisualizer, SSAOOutputMode } from '@sruim/pbr-visualizer-sdk';
 import { Vector3, Color } from 'three';
 
 // 全局类型声明
@@ -7,6 +7,9 @@ declare global {
     applyPreset: (presetName: string) => Promise<void>;
     resetMaterial: () => Promise<void>;
     randomizeMaterial: () => Promise<void>;
+    toggleDebugMode: () => void;
+    toggleLightHelpers: () => void;
+    cycleBufferMode: () => void;
   }
 }
 
@@ -337,6 +340,99 @@ export class MaterialEditor {
     `;
     document.body.appendChild(errorDiv);
   }
+
+  // ========================
+  // Debug 功能方法
+  // ========================
+
+  /**
+   * 切换Debug模式
+   */
+  public toggleDebug(): void {
+    if (!this.visualizer) {
+      console.warn('[MaterialEditor] Visualizer not initialized');
+      return;
+    }
+
+    const isEnabled = this.visualizer.debug.toggle();
+    console.log(`[MaterialEditor] Debug mode ${isEnabled ? 'enabled' : 'disabled'}`);
+
+    // 更新按钮状态
+    const debugBtn = document.getElementById('debug-toggle-btn');
+    if (debugBtn) {
+      debugBtn.textContent = isEnabled ? '🔧 关闭调试' : '🔧 开启调试';
+      debugBtn.classList.toggle('active', isEnabled);
+    }
+  }
+
+  /**
+   * 切换灯光Helper显示
+   */
+  public toggleLightHelpers(): void {
+    if (!this.visualizer) {
+      console.warn('[MaterialEditor] Visualizer not initialized');
+      return;
+    }
+
+    const debugState = this.visualizer.debug.getState();
+    const newEnabled = !debugState.activeLightHelpers.length;
+
+    // 如果Debug未启用，先启用它
+    if (!debugState.enabled) {
+      this.visualizer.debug.enable();
+    }
+
+    this.visualizer.debug.setLightHelpersEnabled(newEnabled);
+    console.log(`[MaterialEditor] Light helpers ${newEnabled ? 'shown' : 'hidden'}`);
+
+    // 更新按钮状态
+    const helperBtn = document.getElementById('light-helper-btn');
+    if (helperBtn) {
+      helperBtn.textContent = newEnabled ? '💡 隐藏灯光' : '💡 显示灯光';
+      helperBtn.classList.toggle('active', newEnabled);
+    }
+  }
+
+  /**
+   * 切换Buffer可视化模式
+   */
+  public cycleBufferMode(): void {
+    if (!this.visualizer) {
+      console.warn('[MaterialEditor] Visualizer not initialized');
+      return;
+    }
+
+    const debugState = this.visualizer.debug.getState();
+
+    // 如果Debug未启用，先启用它
+    if (!debugState.enabled) {
+      this.visualizer.debug.enable();
+    }
+
+    const nextMode = this.visualizer.debug.cycleBufferMode();
+    const modeNames: Record<SSAOOutputMode, string> = {
+      [SSAOOutputMode.Default]: '默认',
+      [SSAOOutputMode.SSAO]: 'SSAO',
+      [SSAOOutputMode.Blur]: '模糊',
+      [SSAOOutputMode.Depth]: '深度',
+      [SSAOOutputMode.Normal]: '法线'
+    };
+
+    console.log(`[MaterialEditor] Buffer mode: ${modeNames[nextMode]}`);
+
+    // 更新按钮文本
+    const bufferBtn = document.getElementById('buffer-mode-btn');
+    if (bufferBtn) {
+      bufferBtn.textContent = `🖼️ ${modeNames[nextMode]}`;
+    }
+  }
+
+  /**
+   * 获取visualizer实例（用于外部访问）
+   */
+  public getVisualizer(): PBRVisualizer | null {
+    return this.visualizer;
+  }
 }
 
 // 全局函数，供 HTML 调用
@@ -360,6 +456,27 @@ window.resetMaterial = async function (): Promise<void> {
 window.randomizeMaterial = async function (): Promise<void> {
   if (materialEditor) {
     await materialEditor.randomizeMaterial();
+  }
+};
+
+// 切换Debug模式
+window.toggleDebugMode = function (): void {
+  if (materialEditor) {
+    materialEditor.toggleDebug();
+  }
+};
+
+// 切换灯光Helper
+window.toggleLightHelpers = function (): void {
+  if (materialEditor) {
+    materialEditor.toggleLightHelpers();
+  }
+};
+
+// 切换Buffer可视化模式
+window.cycleBufferMode = function (): void {
+  if (materialEditor) {
+    materialEditor.cycleBufferMode();
   }
 };
 

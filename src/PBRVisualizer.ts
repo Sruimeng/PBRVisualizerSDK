@@ -19,6 +19,7 @@ import { EnvironmentSystem } from './core/EnvironmentSystem';
 import { LightSystem } from './core/LightSystem';
 import { PostProcessSystem } from './core/PostProcessSystem';
 import { MaterialSystem } from './core/MaterialSystem';
+import { DebugSystem } from './core/DebugSystem';
 
 /**
  * PBR可视化器主类
@@ -39,6 +40,7 @@ export class PBRVisualizer {
     private lightSystem!: LightSystem;
     private postProcessSystem!: PostProcessSystem;
     private materialSystem!: MaterialSystem;
+    private debugSystem!: DebugSystem;
 
     // 场景组件
     private scene!: THREE.Scene;
@@ -169,6 +171,15 @@ export class PBRVisualizer {
             window.innerHeight
         );
         this.materialSystem = new MaterialSystem(this.renderer.renderer);
+
+        // 创建调试系统
+        this.debugSystem = new DebugSystem(
+            this.lightSystem,
+            this.postProcessSystem,
+            this.options.container,
+            () => this.getPerformanceStats(),
+            this.options.debugConfig
+        );
 
         // 设置轨道控制器
         this.controls = new OrbitControls(this.camera, this.renderer.canvas);
@@ -755,6 +766,7 @@ export class PBRVisualizer {
         this.models.clear();
 
         // 销毁子系统
+        this.debugSystem.dispose();
         this.environmentSystem.dispose();
         this.lightSystem.dispose();
         this.postProcessSystem.dispose();
@@ -792,5 +804,26 @@ export class PBRVisualizer {
 
     public get disposed(): boolean {
         return this.isDisposed;
+    }
+
+    /**
+     * 获取调试系统API
+     * 提供完整的调试功能访问
+     *
+     * @example
+     * // 启用调试模式
+     * visualizer.debug.enable();
+     *
+     * // 显示灯光Helper
+     * visualizer.debug.setLightHelpersEnabled(true);
+     *
+     * // 切换Buffer可视化模式
+     * visualizer.debug.setBufferVisualizationMode(SSAOOutputMode.Depth);
+     *
+     * // 获取调试状态
+     * const state = visualizer.debug.getState();
+     */
+    public get debug(): DebugSystem {
+        return this.debugSystem;
     }
 }
