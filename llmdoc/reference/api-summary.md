@@ -25,6 +25,20 @@ const visualizer = new PBRVisualizer(options: VisualizerOptions);
 - `resetCamera(): void` - 重置相机到初始位置
 - `updateControls(config: ControlsConfig): void` - 更新控制配置
 
+**暗角系统方法:**
+- `setModelVignette(modelId: string, config: Partial<VignetteConfig>): void` - 设置模型暗角
+- `createVignetteSphere(modelId: string, config: VignetteConfig): void` - 创建暗角球体（内部方法）
+- `updateVignetteSphere(modelId: string): void` - 更新暗角球体参数（内部方法）
+- `removeVignetteSphere(modelId: string): void` - 移除暗角球体（内部方法）
+- `updateAllVignetteSpheres(): void` - 更新所有暗角球体位置（在渲染循环中调用）
+
+**TransformControls系统方法:**
+- `setModelTransformControls(modelId: string, config: Partial<TransformControlsConfig>): void` - 设置模型变换控制
+- `createTransformControlsForModel(modelId: string, config: TransformControlsConfig): void` - 创建变换控制器（内部方法）
+- `removeTransformControlsForModel(modelId: string): void` - 移除变换控制器（内部方法）
+- `setTransformControlsMode(modelId: string, mode: 'translate' | 'rotate' | 'scale'): void` - 设置变换模式
+- `setActiveTransformControls(modelId: string | null): void` - 设置活动的变换控制器
+
 ### 配置接口
 
 ### VisualizerOptions
@@ -128,6 +142,50 @@ interface PostProcessState {
         type: 'fxaa' | 'msaa';
         enabled: boolean;
     };
+}
+```
+
+### VignetteConfig
+
+```typescript
+interface VignetteConfig {
+    // 是否启用暗角球体；默认值：false
+    enabled: boolean;
+    // 暗角半径比例（相对于模型包围盒）；默认值：1.5
+    radiusScale?: number;
+    // 平滑度（暗角边缘渐变）；默认值：0.15
+    smoothness?: number;
+    // 暗角环半径；默认值：0.75
+    ringRadius?: number;
+    // 噪波强度；默认值：0.08
+    noiseIntensity?: number;
+    // 暗角颜色1（暗处）；默认值：#0f0c29
+    color1?: Color | string;
+    // 暗角颜色2（亮处）；默认值：#4a6fa5
+    color2?: Color | string;
+    // 暗角范围；默认值：0.85
+    vignetteRange?: number;
+    // 亮度补偿；默认值：0.10
+    brightness?: number;
+}
+```
+
+### TransformControlsConfig
+
+```typescript
+interface TransformControlsConfig {
+    // 是否启用 TransformControls；默认值：false
+    enabled: boolean;
+    // 控制模式；默认值：'rotate'
+    mode: 'translate' | 'rotate' | 'scale';
+    // 控制器大小；默认值：1.0
+    size?: number;
+    // 是否显示 X 轴；默认值：true
+    showX?: boolean;
+    // 是否显示 Y 轴；默认值：true
+    showY?: boolean;
+    // 是否显示 Z 轴；默认值：true
+    showZ?: boolean;
 }
 ```
 

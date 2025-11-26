@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
@@ -12,8 +13,11 @@ import {
     StateTransaction,
     PerformanceStats,
     ErrorEvent,
-    StateMachineConfig
+    StateMachineConfig,
+    VignetteConfig,
+    TransformControlsConfig
 } from './types';
+import { createIBLSphereMaterial } from './shaders/IBLSphere';
 
 import { Renderer } from './core/Renderer';
 import { EnvironmentSystem } from './core/EnvironmentSystem';
@@ -63,6 +67,14 @@ export class PBRVisualizer {
 
     // 状态机管理
     private stateMachines = new Map<string, AnimationStateMachine>();
+
+    // 暗角球体管理（每个模型独立）
+    private vignetteSpheres = new Map<string, THREE.Mesh>();
+    private vignetteMaterials = new Map<string, THREE.RawShaderMaterial>();
+
+    // TransformControls管理（每个模型独立）
+    private transformControlsMap = new Map<string, TransformControls>();
+    private activeTransformControlsId: string | null = null;
 
     // 事件系统
     private eventListeners = new Map<string, Function[]>();
@@ -348,6 +360,11 @@ export class PBRVisualizer {
                 stateMachine.update(deltaTime);
             });
 
+            // 更新所有暗角球体的相机位置
+            this.vignetteMaterials.forEach((material) => {
+                material.uniforms.uCamPos.value.copy(this.camera.position);
+            });
+
             // 渲染场景
             this.postProcessSystem.render();
 
@@ -419,8 +436,36 @@ export class PBRVisualizer {
                 ...initialState
             };
 
+            // 立即应用initialState的transform（覆盖processModel的自动居中）
+            if (initialState?.transform) {
+                if (initialState.transform.position) {
+                    model.position.copy(initialState.transform.position);
+                }
+                if (initialState.transform.rotation) {
+                    model.rotation.copy(initialState.transform.rotation);
+                }
+                if (initialState.transform.scale) {
+                    model.scale.copy(initialState.transform.scale);
+                }
+                console.log(`[PBRVisualizer] Applied initial transform for model '${id}':`, {
+                    position: model.position.toArray(),
+                    rotation: [model.rotation.x, model.rotation.y, model.rotation.z],
+                    scale: model.scale.toArray()
+                });
+            }
+
             // 设置Studio灯光
             this.setupStudioLighting(model);
+
+            // 设置暗角球体（如果配置启用）
+            if (initialState?.vignette?.enabled) {
+                this.createVignetteSphere(id, model, initialState.vignette);
+            }
+
+            // 设置TransformControls（如果配置启用）
+            if (initialState?.transformControls?.enabled) {
+                this.createTransformControlsForModel(id, model, initialState.transformControls);
+            }
 
             const loadTime = performance.now() - startTime;
 
@@ -473,6 +518,272 @@ export class PBRVisualizer {
             size,
             radius: Math.max(size.x, size.y, size.z) / 2
         });
+    }
+
+    // ========================
+    // 暗角球体系统
+    // ========================
+
+    /**
+     * 为模型创建暗角球体
+     * 球体会跟随模型位置和大小
+     */
+    private createVignetteSphere(modelId: string, model: THREE.Object3D, config: VignetteConfig): void {
+        // 清理已存在的暗角球体
+        this.removeVignetteSphere(modelId);
+
+        // 计算模型包围盒
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+
+        // 计算球体半径（基于包围盒和配置的比例）
+        const radiusScale = config.radiusScale ?? 1.5;
+        const radius = Math.max(size.x, size.y, size.z) * radiusScale;
+
+        // 解析颜色
+        const color1 = config.color1 instanceof THREE.Color
+            ? config.color1
+            : new THREE.Color(config.color1 ?? 0x0f0c29);
+        const color2 = config.color2 instanceof THREE.Color
+            ? config.color2
+            : new THREE.Color(config.color2 ?? 0x4a6fa5);
+
+        // 创建暗角材质
+        const material = createIBLSphereMaterial({
+            uCamPos: this.camera.position,
+            uSmooth: config.smoothness ?? 0.15,
+            uRadius: config.ringRadius ?? 0.75,
+            uNoise: config.noiseIntensity ?? 0.08,
+            uBgColor1: color1,
+            uBgColor2: color2,
+            uVignette: config.vignetteRange ?? 0.85,
+            uBright: config.brightness ?? 0.10
+        });
+
+        // 创建球体几何体
+        const geometry = new THREE.SphereGeometry(radius, 64, 64);
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // 设置位置跟随模型
+        mesh.position.copy(center);
+
+        // 添加到场景（在模型之前渲染）
+        mesh.renderOrder = -1;
+        this.scene.add(mesh);
+
+        // 保存引用
+        this.vignetteSpheres.set(modelId, mesh);
+        this.vignetteMaterials.set(modelId, material);
+
+        console.log(`[PBRVisualizer] Created vignette sphere for model '${modelId}', radius: ${radius}`);
+    }
+
+    /**
+     * 移除模型的暗角球体
+     */
+    private removeVignetteSphere(modelId: string): void {
+        const sphere = this.vignetteSpheres.get(modelId);
+        if (sphere) {
+            this.scene.remove(sphere);
+            sphere.geometry.dispose();
+            const material = this.vignetteMaterials.get(modelId);
+            if (material) {
+                material.dispose();
+            }
+            this.vignetteSpheres.delete(modelId);
+            this.vignetteMaterials.delete(modelId);
+        }
+    }
+
+    /**
+     * 更新暗角球体位置和大小（跟随模型）
+     */
+    private updateVignetteSphere(modelId: string): void {
+        const model = this.models.get(modelId);
+        const sphere = this.vignetteSpheres.get(modelId);
+        const material = this.vignetteMaterials.get(modelId);
+
+        if (!model || !sphere || !material) return;
+
+        // 计算模型当前包围盒
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        // 更新球体位置
+        sphere.position.copy(center);
+
+        // 获取配置的半径比例
+        const config = this.currentState.models[modelId]?.vignette;
+        const radiusScale = config?.radiusScale ?? 1.5;
+        const newRadius = Math.max(size.x, size.y, size.z) * radiusScale;
+
+        // 如果大小变化超过阈值，重新创建几何体
+        const currentRadius = (sphere.geometry as THREE.SphereGeometry).parameters.radius;
+        if (Math.abs(newRadius - currentRadius) > 0.01) {
+            sphere.geometry.dispose();
+            sphere.geometry = new THREE.SphereGeometry(newRadius, 64, 64);
+        }
+
+        // 更新相机位置uniform
+        material.uniforms.uCamPos.value.copy(this.camera.position);
+    }
+
+    /**
+     * 更新所有暗角球体
+     */
+    public updateAllVignetteSpheres(): void {
+        this.vignetteSpheres.forEach((_, modelId) => {
+            this.updateVignetteSphere(modelId);
+        });
+    }
+
+    /**
+     * 设置模型的暗角配置
+     */
+    public setModelVignette(modelId: string, config: VignetteConfig): void {
+        const model = this.models.get(modelId);
+        if (!model) {
+            console.warn(`[PBRVisualizer] Model '${modelId}' not found`);
+            return;
+        }
+
+        // 更新状态
+        if (!this.currentState.models[modelId]) return;
+        this.currentState.models[modelId].vignette = config;
+
+        if (config.enabled) {
+            this.createVignetteSphere(modelId, model, config);
+        } else {
+            this.removeVignetteSphere(modelId);
+        }
+    }
+
+    // ========================
+    // TransformControls 系统
+    // ========================
+
+    /**
+     * 为模型创建TransformControls
+     */
+    private createTransformControlsForModel(
+        modelId: string,
+        model: THREE.Object3D,
+        config: TransformControlsConfig
+    ): void {
+        // 清理已存在的控件
+        this.removeTransformControlsForModel(modelId);
+
+        // 创建TransformControls
+        const transformControls = new TransformControls(this.camera, this.renderer.canvas);
+
+        // 应用配置
+        transformControls.setMode(config.mode || 'rotate');
+        transformControls.setSize(config.size ?? 1.0);
+
+        if (config.showX !== undefined) transformControls.showX = config.showX;
+        if (config.showY !== undefined) transformControls.showY = config.showY;
+        if (config.showZ !== undefined) transformControls.showZ = config.showZ;
+
+        // 绑定到模型
+        transformControls.attach(model);
+
+        // 监听拖拽事件，禁用OrbitControls防止冲突
+        transformControls.addEventListener('dragging-changed', (event) => {
+            this.controls.enabled = !event.value;
+
+            // 拖拽结束后更新暗角球体
+            if (!event.value) {
+                this.updateVignetteSphere(modelId);
+                // 发送变换事件
+                this.emit('transformChange', {
+                    modelId,
+                    position: model.position.clone(),
+                    rotation: model.rotation.clone(),
+                    scale: model.scale.clone()
+                });
+            }
+        });
+
+        // 添加到场景
+        this.scene.add(transformControls as unknown as THREE.Object3D);
+
+        // 保存引用
+        this.transformControlsMap.set(modelId, transformControls);
+
+        console.log(`[PBRVisualizer] Created TransformControls for model '${modelId}', mode: ${config.mode}`);
+    }
+
+    /**
+     * 移除模型的TransformControls
+     */
+    private removeTransformControlsForModel(modelId: string): void {
+        const controls = this.transformControlsMap.get(modelId);
+        if (controls) {
+            controls.detach();
+            this.scene.remove(controls as unknown as THREE.Object3D);
+            controls.dispose();
+            this.transformControlsMap.delete(modelId);
+
+            if (this.activeTransformControlsId === modelId) {
+                this.activeTransformControlsId = null;
+            }
+        }
+    }
+
+    /**
+     * 设置模型的TransformControls配置
+     */
+    public setModelTransformControls(modelId: string, config: TransformControlsConfig): void {
+        const model = this.models.get(modelId);
+        if (!model) {
+            console.warn(`[PBRVisualizer] Model '${modelId}' not found`);
+            return;
+        }
+
+        // 更新状态
+        if (!this.currentState.models[modelId]) return;
+        this.currentState.models[modelId].transformControls = config;
+
+        if (config.enabled) {
+            this.createTransformControlsForModel(modelId, model, config);
+        } else {
+            this.removeTransformControlsForModel(modelId);
+        }
+    }
+
+    /**
+     * 设置TransformControls的模式
+     */
+    public setTransformControlsMode(modelId: string, mode: 'translate' | 'rotate' | 'scale'): void {
+        const controls = this.transformControlsMap.get(modelId);
+        if (controls) {
+            controls.setMode(mode);
+            // 更新状态
+            const modelState = this.currentState.models[modelId];
+            if (modelState?.transformControls) {
+                modelState.transformControls.mode = mode;
+            }
+        }
+    }
+
+    /**
+     * 获取当前活动的TransformControls模型ID
+     */
+    public getActiveTransformControlsModelId(): string | null {
+        return this.activeTransformControlsId;
+    }
+
+    /**
+     * 设置活动的TransformControls（高亮显示）
+     */
+    public setActiveTransformControls(modelId: string | null): void {
+        // 隐藏所有其他的TransformControls
+        this.transformControlsMap.forEach((controls, id) => {
+            (controls as unknown as THREE.Object3D).visible = id === modelId;
+        });
+        this.activeTransformControlsId = modelId;
     }
 
     /**
@@ -805,6 +1116,19 @@ export class PBRVisualizer {
         });
         this.models.clear();
 
+        // 清理暗角球体
+        this.vignetteSpheres.forEach((_, modelId) => {
+            this.removeVignetteSphere(modelId);
+        });
+        this.vignetteSpheres.clear();
+        this.vignetteMaterials.clear();
+
+        // 清理TransformControls
+        this.transformControlsMap.forEach((_, modelId) => {
+            this.removeTransformControlsForModel(modelId);
+        });
+        this.transformControlsMap.clear();
+
         // 销毁子系统
         this.debugSystem.dispose();
         this.environmentSystem.dispose();
@@ -949,6 +1273,13 @@ export class PBRVisualizer {
         }
 
         return false;
+    }
+
+    /**
+     * 获取模型的THREE.Object3D对象
+     */
+    public getModel(modelId: string): THREE.Object3D | null {
+        return this.models.get(modelId) || null;
     }
 
     /**

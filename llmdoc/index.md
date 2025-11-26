@@ -154,6 +154,20 @@
 - 角色动画切换专用效果
 - 自定义缓动函数和组合效果
 
+**[暗角系统使用指南](guides/vignette-system-guide.md)** - 暗角背景球体配置和使用教程
+- 暗角系统的工作原理和核心机制
+- 完整的参数配置说明和默认值
+- 多种使用场景示例（专业展示、珠宝、科技、艺术等）
+- 动态配置和多模型管理方法
+- 最佳实践和故障排查
+
+**[TransformControls系统使用指南](guides/transform-controls-guide.md)** - 3D模型变换控制教程
+- 平移、旋转、缩放三种操作模式
+- 轴向控制和灵活的交互配置
+- 多模型场景编排和活动控制器管理
+- 与撤销/重做和其他系统的集成
+- 完整的UI集成示例和最佳实践
+
 ## 📚 参考资料 (Reference)
 
 **[API概要](reference/api-summary.md)** - 核心API和配置接口概要
@@ -249,20 +263,21 @@
 
 ## 📊 文档统计
 
-- **总文档数**: 44个（含索引）
+- **总文档数**: 46个（含索引）
 - **概述文档**: 2个
 - **架构文档**: 7个（包含动画状态机系统、Debug系统增强）
-- **指南文档**: 18个（新增材质和光照配置工作流程、状态机淡入淡出效果增强指南）
+- **指南文档**: 20个（新增暗角系统使用指南、TransformControls系统使用指南）
 - **参考文档**: 8个
-- **分析报告**: 9个（新增Debug模式实现调查报告）
+- **分析报告**: 9个
 - **代码示例**: 包含完整的使用示例和最佳实践
-- **源代码**: 约4,000行TypeScript代码
-- **类型定义**: 约600行完整类型系统
+- **源代码**: 约4,500行TypeScript代码
+- **类型定义**: 约700行完整类型系统（新增VignetteConfig、TransformControlsConfig）
 
 ## 🔗 快速导航
 
-- **新手入门**: [快速开始](guides/quick-start.md) → [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [状态机淡入淡出效果增强指南](guides/animation-fade-enhancement.md) → [API初始化配置](guides/api-setup.md)
+- **新手入门**: [快速开始](guides/quick-start.md) → [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [API初始化配置](guides/api-setup.md)
 - **深度学习**: [项目概览](overview/project-overview.md) → [核心渲染系统](architecture/core-rendering-system.md) → [状态管理架构](architecture/state-management.md) → [动画状态机系统](architecture/animation-state-machine.md)
 - **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [Demo系统状态](reference/demo-system-status.md) → [功能对齐调查报告](agent/feature-alignment-investigation.md) → [Demo运行时调查报告](agent/demo-runtime-investigation.md) → [智能分析报告](agent/)
 - **材质设计**: [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [PBR材质系统](architecture/pbr-material-system.md) → [PBR材质创建工作流](guides/pbr-material-creation-workflow.md)
+- **3D交互**: [暗角系统使用指南](guides/vignette-system-guide.md) → [TransformControls系统使用指南](guides/transform-controls-guide.md) → [API使用模式](guides/api-usage.md) → [核心渲染系统](architecture/core-rendering-system.md)
 - **开发调试**: [Debug模式使用指南](guides/debug-mode-usage.md) → [Debug系统架构](architecture/debug-system.md) → [Debug系统增强](architecture/debug-system-enhancement.md) → [Debug模式实现调查报告](agent/debug-mode-implementation-investigation.md) → [编码约定](reference/coding-conventions.md) → [Git约定](reference/git-conventions.md)

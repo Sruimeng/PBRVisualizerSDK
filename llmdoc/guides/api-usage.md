@@ -101,3 +101,134 @@ visualizer.updateControls({
     autoRotateSpeed: 2.0
 });
 ```
+
+## 5. 暗角系统
+
+```typescript
+// 为模型配置暗角球体
+visualizer.setModelVignette('model1', {
+    enabled: true,
+    radiusScale: 1.5,        // 球体半径比例（相对于模型包围盒）
+    smoothness: 0.15,        // 边缘渐变平滑度
+    ringRadius: 0.75,        // 暗角环半径
+    noiseIntensity: 0.08,    // 噪声强度
+    color1: '#0f0c29',       // 暗处颜色
+    color2: '#4a6fa5',       // 亮处颜色
+    vignetteRange: 0.85,     // 暗角范围
+    brightness: 0.10         // 亮度补偿
+});
+
+// 批量配置多个模型的暗角
+await visualizer.batchUpdate([
+    {
+        modelId: 'model1',
+        config: {
+            vignette: { enabled: true, radiusScale: 1.5 }
+        }
+    },
+    {
+        modelId: 'model2',
+        config: {
+            vignette: { enabled: true, radiusScale: 1.8, color1: '#1a1a1a' }
+        }
+    }
+]);
+
+// 仅更新暗角颜色
+visualizer.setModelVignette('model1', {
+    color1: '#2a2a4a',
+    color2: '#5a8fc5'
+});
+
+// 禁用暗角
+visualizer.setModelVignette('model1', { enabled: false });
+```
+
+## 6. TransformControls系统
+
+```typescript
+// 为模型启用变换控制（旋转模式）
+visualizer.setModelTransformControls('model1', {
+    enabled: true,
+    mode: 'rotate',  // 'translate', 'rotate', 'scale'
+    size: 1.0,       // 控制器大小
+    showX: true,
+    showY: true,
+    showZ: true
+});
+
+// 切换到平移模式
+visualizer.setTransformControlsMode('model1', 'translate');
+
+// 切换到缩放模式
+visualizer.setTransformControlsMode('model1', 'scale');
+
+// 设置活动的变换控制器（同时只能有一个活动）
+visualizer.setActiveTransformControls('model1');
+
+// 批量配置多个模型的变换控制
+await visualizer.batchUpdate([
+    {
+        modelId: 'model1',
+        config: {
+            transformControls: { enabled: true, mode: 'rotate' }
+        }
+    },
+    {
+        modelId: 'model2',
+        config: {
+            transformControls: { enabled: true, mode: 'translate' }
+        }
+    }
+]);
+
+// 仅显示X和Z轴（隐藏Y轴）
+visualizer.setModelTransformControls('model1', {
+    showX: true,
+    showY: false,
+    showZ: true
+});
+
+// 禁用变换控制
+visualizer.setModelTransformControls('model1', { enabled: false });
+```
+
+## 7. 暗角和TransformControls组合使用
+
+```typescript
+// 创建完整的交互场景：暗角背景+变换控制
+await visualizer.updateModel('model1', {
+    vignette: {
+        enabled: true,
+        radiusScale: 1.5,
+        color1: '#0f0c29',
+        color2: '#4a6fa5',
+        smoothness: 0.15
+    },
+    transformControls: {
+        enabled: true,
+        mode: 'rotate',
+        size: 1.0
+    }
+});
+
+// 动态切换交互模式
+const switchToTranslate = () => {
+    visualizer.setTransformControlsMode('model1', 'translate');
+};
+
+const switchToRotate = () => {
+    visualizer.setTransformControlsMode('model1', 'rotate');
+};
+
+const switchToScale = () => {
+    visualizer.setTransformControlsMode('model1', 'scale');
+};
+
+// 监听变换后的模型状态
+visualizer.on('stateChanged', (event) => {
+    if (event.modelId === 'model1' && event.changes.transform) {
+        console.log('模型已变换:', event.changes.transform);
+    }
+});
+```

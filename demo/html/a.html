@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Three.js Split View + SSR + Bloom + Independent Controls</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #111;
+        user-select: none; /* 防止拖拽时选中文字 */
+      }
+      canvas {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+      }
+      /* 
+         核心修改：添加两个透明层覆盖在Canvas之上 
+         这允许 OrbitControls 分别监听这两个独立的DOM元素，
+         从而实现互不干扰的独立控制和惯性阻尼。
+      */
+      .viewport-overlay {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        width: 50%;
+        z-index: 10;
+        touch-action: none; /* 必须：防止移动端滚动 */
+        outline: none;
+      }
+      #viewL {
+        left: 0;
+        border-right: 1px solid #333; /* 可选：分割线 */
+        box-sizing: border-box;
+      }
+      #viewR {
+        left: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 独立的事件交互层 -->
+    <div id="viewL" class="viewport-overlay"></div>
+    <div id="viewR" class="viewport-overlay"></div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.181.2/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.181.2/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from 'three';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+      import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+      import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+      import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+      import { SSRPass } from 'three/addons/postprocessing/SSRPass.js';
+      import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+      /* ------------------- Renderer ------------------- */
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      document.body.appendChild(renderer.domElement);
+
+      /* ------------------- 两个独立 Scene + Camera ------------------- */
+      function createCamera() {
+        const cam = new THREE.PerspectiveCamera(
+          50,
+          window.innerWidth / 2 / window.innerHeight, // Aspect ratio based on half width
+          0.1,
+          50,
+        );
+        cam.position.set(3, 2, 3);
+        return cam;
+      }
+
+      const sceneL = new THREE.Scene();
+      const sceneR = new THREE.Scene();
+      sceneL.background = sceneR.background = new THREE.Color(0x141414);
+
+      const cameraL = createCamera();
+      const cameraR = createCamera();
+
+      /* ------------------- Controls (核心修改) ------------------- */
+      // 我们不再将 Controls 绑定到 renderer.domElement (即 canvas)
+      // 而是绑定到各自覆盖在上面的 div 元素 (#viewL, #viewR)
+      // 这样 Three.js 会自动处理事件冒泡和坐标偏移，实现完美的独立热区
+      const viewL = document.getElementById('viewL');
+      const viewR = document.getElementById('viewR');
+
+      const controlsL = new OrbitControls(cameraL, viewL);
+      const controlsR = new OrbitControls(cameraR, viewR);
+
+      controlsL.enableDamping = true;
+      controlsR.enableDamping = true;
+      controlsL.dampingFactor = 0.05;
+      controlsR.dampingFactor = 0.05;
+
+      /* ------------------- 加载 HDR ------------------- */
+      function loadHDR(scene, url) {
+        new RGBELoader().load(url, (tex) => {
+          tex.mapping = THREE.EquirectangularReflectionMapping;
+          scene.environment = tex;
+        });
+      }
+
+      loadHDR(
+        sceneL,
+        'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_03_1k.hdr',
+      );
+      loadHDR(
+        sceneR,
+        'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/artist_workshop_1k.hdr',
+      );
+
+      /* ------------------- 加载 glTF 模型 ------------------- */
+      function loadModel(scene, url, pos) {
+        new GLTFLoader().load(url, (gltf) => {
+          gltf.scene.position.copy(pos);
+          gltf.scene.traverse((o) => {
+            if (o.isMesh && o.material) o.material.envMapIntensity = 1.2;
+          });
+          scene.add(gltf.scene);
+        });
+      }
+
+      loadModel(
+        sceneL,
+        'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf',
+        new THREE.Vector3(0, 0, 0),
+      );
+      loadModel(
+        sceneR,
+        'https://threejs.org/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb',
+        new THREE.Vector3(0, 0, 0),
+      );
+
+      /* ------------------- 后处理管线 ------------------- */
+      function buildPipeline(scene, camera) {
+        const size = new THREE.Vector2();
+        renderer.getSize(size);
+        const halfWidth = size.x / 2;
+
+        const composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+
+        const ssrPass = new SSRPass({
+          renderer,
+          scene,
+          camera,
+          width: halfWidth,
+          height: size.y,
+        });
+        composer.addPass(ssrPass);
+
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(halfWidth, size.y), 0.8, 0.3, 0.85);
+        composer.addPass(bloomPass);
+
+        composer.addPass(new OutputPass());
+        composer.setSize(halfWidth, size.y);
+        return { composer, ssrPass };
+      }
+
+      const { composer: composerL, ssrPass: ssrPassL } = buildPipeline(sceneL, cameraL);
+      const { composer: composerR, ssrPass: ssrPassR } = buildPipeline(sceneR, cameraR);
+
+      /* ------------------- 渲染循环 ------------------- */
+      function render() {
+        requestAnimationFrame(render);
+
+        // 核心修改：无条件同时更新两个 Controls
+        // 这样即使鼠标离开了左侧区域，左侧的惯性（Damping）依然会继续计算
+        controlsL.update();
+        controlsR.update();
+
+        const w = window.innerWidth,
+          h = window.innerHeight;
+        renderer.setScissorTest(true);
+
+        // 左侧渲染
+        renderer.setViewport(0, 0, w / 2, h);
+        renderer.setScissor(0, 0, w / 2, h);
+        composerL.render();
+
+        // 右侧渲染
+        renderer.setViewport(w / 2, 0, w / 2, h);
+        renderer.setScissor(w / 2, 0, w / 2, h);
+        composerR.render();
+      }
+      render();
+
+      /* ------------------- 自适应窗口 ------------------- */
+      window.addEventListener('resize', () => {
+        const w = window.innerWidth,
+          h = window.innerHeight;
+        renderer.setSize(w, h);
+
+        function resizeCamera(cam) {
+          cam.aspect = w / 2 / h;
+          cam.updateProjectionMatrix();
+        }
+
+        resizeCamera(cameraL);
+        resizeCamera(cameraR);
+
+        const halfW = w / 2;
+        composerL.setSize(halfW, h);
+        composerR.setSize(halfW, h);
+        ssrPassL.setSize(halfW, h);
+        ssrPassR.setSize(halfW, h);
+      });
+    </script>
+  </body>
+</html>

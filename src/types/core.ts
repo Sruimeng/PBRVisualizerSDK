@@ -178,6 +178,50 @@ export interface ControlState {
   autoRotateSpeed: number;
 }
 
+/**
+ * TransformControls 配置
+ * 用于模型的独立变换控制（旋转、移动、缩放）
+ */
+export interface TransformControlsConfig {
+  // 是否启用 TransformControls；默认值：false
+  enabled: boolean;
+  // 控制模式；默认值：'rotate'
+  mode: 'translate' | 'rotate' | 'scale';
+  // 控制器大小；默认值：1.0
+  size?: number;
+  // 是否显示 X 轴；默认值：true
+  showX?: boolean;
+  // 是否显示 Y 轴；默认值：true
+  showY?: boolean;
+  // 是否显示 Z 轴；默认值：true
+  showZ?: boolean;
+}
+
+/**
+ * 暗角球体配置
+ * 每个模型可以有独立的暗角背景球体
+ */
+export interface VignetteConfig {
+  // 是否启用暗角球体；默认值：false
+  enabled: boolean;
+  // 暗角半径比例（相对于模型包围盒）；默认值：1.5
+  radiusScale?: number;
+  // 平滑度（暗角边缘渐变）；默认值：0.15
+  smoothness?: number;
+  // 暗角环半径；默认值：0.75
+  ringRadius?: number;
+  // 噪波强度；默认值：0.08
+  noiseIntensity?: number;
+  // 暗角颜色1（暗处）；默认值：#0f0c29
+  color1?: Color | string;
+  // 暗角颜色2（亮处）；默认值：#4a6fa5
+  color2?: Color | string;
+  // 暗角范围；默认值：0.85
+  vignetteRange?: number;
+  // 亮度补偿；默认值：0.10
+  brightness?: number;
+}
+
 // 模型状态：可见性、变换、材质与动画集合
 export interface ModelState {
   // 动画参数
@@ -199,6 +243,10 @@ export interface ModelState {
     // 缩放；默认值：(1,1,1)
     scale: Vector3;
   };
+  // 暗角球体配置（每个模型独立的背景暗角效果）
+  vignette?: VignetteConfig;
+  // TransformControls配置（模型独立变换控制器）
+  transformControls?: TransformControlsConfig;
 }
 
 // 场景状态：全局状态与模型集合

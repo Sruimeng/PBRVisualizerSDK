@@ -27,6 +27,20 @@
 - **关键职责**: 动态光照配置、自适应灯光强度
 - **特色功能**: RectAreaLight支持、模型边界自适应
 
+### 暗角系统 (Vignette System)
+- **核心功能**: 为模型提供可配置的暗角背景球体
+- **关键职责**: 创建、更新和管理每个模型的独立暗角效果
+- **实现方式**: 使用IBLSphere着色器创建BackSide渲染球体
+- **位置追踪**: 球体自动跟随模型中心位置，在渲染循环中实时更新
+- **配置灵活性**: 支持独立配置radius、smoothness、colors、brightness等参数
+
+### TransformControls系统
+- **核心功能**: 为模型提供交互式变换控制（旋转、移动、缩放）
+- **关键职责**: 创建、管理和切换模型的变换控制器
+- **集成方式**: 集成three.js TransformControls，支持translate/rotate/scale三种模式
+- **交互协调**: 拖动时自动禁用OrbitControls，避免冲突
+- **状态同步**: 变换操作自动更新模型状态
+
 ### 后处理系统 (`src/core/PostProcessSystem.ts`)
 - **核心功能**: 效果合成器管理和后处理效果
 - **关键职责**: SSAO接触阴影、Bloom泛光、色调映射
@@ -55,9 +69,10 @@
 
 ### 渲染循环流程
 1. **控制器更新**: `PBRVisualizer:251-252` - OrbitControls状态更新
-2. **后处理渲染**: `PBRVisualizer:255` - EffectComposer执行（通过 `PostProcessSystem.render()`，自动检查 `isEnabled` 标志）
-3. **性能统计**: `PBRVisualizer:258` - 实时性能数据更新
-4. **事件分发**: `PBRVisualizer:266-269` - 性能事件通知
+2. **暗角球体更新**: `PBRVisualizer:updateAllVignetteSpheres()` - 实时更新所有暗角球体位置和相机uniform
+3. **后处理渲染**: `PBRVisualizer:255` - EffectComposer执行（通过 `PostProcessSystem.render()`，自动检查 `isEnabled` 标志）
+4. **性能统计**: `PBRVisualizer:258` - 实时性能数据更新
+5. **事件分发**: `PBRVisualizer:266-269` - 性能事件通知
 
 **后处理启用流程**：
 1. **初始化同步**: 构造器中 `this.isEnabled = this.currentConfig.enabled`（第57行），与默认配置保持同步
@@ -94,6 +109,8 @@
 - **灯光系统**: `LightSystem.createStudioLighting()` → 自动布光生成
 - **材质系统**: `MaterialSystem.updateMaterial()` → 材质配置更新，支持自动创建
 - **后处理系统**: `PostProcessSystem.render()` → 渲染管线输出
+- **暗角系统**: `PBRVisualizer.setModelVignette()` → 配置模型暗角，`updateAllVignetteSpheres()` → 实时更新球体位置
+- **TransformControls系统**: `PBRVisualizer.setModelTransformControls()` → 配置变换控制，`setTransformControlsMode()` → 切换控制模式
 
 ## 5. 设计原则
 
@@ -118,15 +135,32 @@
 - **PMREM预过滤**: 环境贴图预处理提升IBL质量
 - **各向异性过滤**: 纹理采样质量优化
 - **延迟渲染**: 后处理效果统一合成
+- **暗角球体渲染**: BackSide球体渲染，高效的视觉特效
 
 ### 内存管理
 - **资源复用**: 材质和纹理缓存避免重复创建
 - **自动清理**: 生命周期管理和资源释放
 - **内存统计**: 实时内存使用监控
+- **球体缓存**: 暗角球体纹理和材质复用
 
 ### 质量控制
 - **自适应质量**: 根据设备性能自动调整渲染质量
 - **色调映射**: ACES Filmic色调映射提升视觉效果
 - **抗锯齿**: FXAA和后处理抗锯齿选项
+- **暗角效果**: 可配置的球体大小、平滑度、颜色和亮度
 
-这个核心渲染系统通过模块化设计和优化的渲染管线，为PBR可视化提供了高性能、可扩展的技术基础。
+### 新增系统特性
+
+#### 暗角系统 (Vignette System)
+- **自动包围盒计算**: 球体大小基于模型包围盒自动计算（radiusScale倍数）
+- **实时位置追踪**: 球体位置跟随模型中心，在每帧渲染循环更新
+- **相机同步**: 相机位置uniform在每帧更新，保持正确的视觉效果
+- **独立配置**: 每个模型可独立配置暗角参数，不影响其他模型
+
+#### TransformControls系统
+- **三种变换模式**: 平移(translate)、旋转(rotate)、缩放(scale)
+- **交互管理**: 自动协调与OrbitControls，拖动时禁用轨道控制避免冲突
+- **状态同步**: 变换操作自动更新模型的Transform状态
+- **轴向控制**: 支持选择显示的轴向(X/Y/Z)，提高交互灵活性
+
+这个核心渲染系统通过模块化设计和优化的渲染管线，为PBR可视化提供了高性能、可扩展的技术基础，新增的暗角和变换控制系统进一步增强了交互体验和视觉效果。
