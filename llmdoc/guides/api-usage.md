@@ -50,20 +50,39 @@ await visualizer.updateEnvironment({
 ## 3. 后处理效果
 
 ```typescript
-// Bloom效果
+// 完整后处理配置
 visualizer.updatePostProcessing({
-    bloom: { enabled: true, strength: 0.5, threshold: 0.8 }
+    enabled: true,  // 启用后处理系统（与isEnabled标志同步）
+    ssao: {
+        enabled: true,
+        kernelRadius: 4,
+        minDistance: 0.005,
+        maxDistance: 0.1
+    },
+    bloom: {
+        enabled: false,  // 默认关闭，性能考虑
+        strength: 0.5,
+        radius: 0.4,
+        threshold: 0.8
+    },
+    toneMapping: {
+        type: THREE.ACESFilmicToneMapping,
+        exposure: 1.0,
+        whitePoint: 1.0
+    },
+    antialiasing: {
+        type: 'fxaa',
+        enabled: true
+    }
 });
 
-// 抗锯齿
-visualizer.updatePostProcessing({
-    antialiasing: { type: 'fxaa', enabled: true }
-});
+// 单独控制SSAO
+visualizer.getPostProcessSystem().toggleSSAO(true);
+visualizer.getPostProcessSystem().adjustSSAOStrength(1.2);
 
-// SSAO
-visualizer.updatePostProcessing({
-    ssao: { enabled: true, intensity: 1.0 }
-});
+// 获取后处理性能信息
+const perfInfo = visualizer.getPostProcessSystem().getPerformanceInfo();
+console.log(`后处理渲染时间: ${perfInfo.renderTime}ms`);
 ```
 
 ## 4. 相机控制

@@ -96,7 +96,8 @@ export class MaterialEditor {
         models: [
           {
             id: this.modelId,
-            source: '/demo/glb/test.glb',
+            // cspell:disable-next-line
+            source: '../../glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb',
           },
         ],
         initialGlobalState: {
@@ -128,13 +129,13 @@ export class MaterialEditor {
               whitePoint: 1.0,
             },
             bloom: {
-              enabled: true,
+              enabled: false,
               strength: 0.3,
               radius: 0.4,
               threshold: 0.8,
             },
             ssao: {
-              enabled: false,
+              enabled: true,
               kernelRadius: 4,
               minDistance: 0.005,
               maxDistance: 0.1,

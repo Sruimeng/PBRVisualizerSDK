@@ -211,7 +211,6 @@ export class PostProcessSystem {
             this.renderer.render(this.scene, this.camera);
             return;
         }
-
         const startTime = performance.now();
 
         // 执行后处理渲染

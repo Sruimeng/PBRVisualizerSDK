@@ -31,7 +31,8 @@
 - **核心功能**: 效果合成器管理和后处理效果
 - **关键职责**: SSAO接触阴影、Bloom泛光、色调映射
 - **性能监控**: 渲染时间统计、通道计数
-- **启用同步机制**: 构造器中同步 `isEnabled` 与 `currentConfig.enabled`（第57行），确保后处理效果立即生效
+- **初始化同步**: 构造器中 `this.isEnabled = this.currentConfig.enabled`（第57行），确保启用状态与配置一致
+- **条件渲染**: `render()` 方法根据 `isEnabled` 标志选择执行合成器渲染或直接渲染（第208-213行）
 
 ### 材质系统 (`src/core/MaterialSystem.ts`)
 - **核心功能**: PBR材质管理和纹理缓存
@@ -59,9 +60,9 @@
 4. **事件分发**: `PBRVisualizer:266-269` - 性能事件通知
 
 **后处理启用流程**：
-1. **初始化同步**: 构造器中 `this.isEnabled = this.currentConfig.enabled`（第57行），默认为 `true`
-2. **配置应用**: `setConfig()` 接收外部配置并同步 `isEnabled` 标志
-3. **条件渲染**: `render()` 检查 `isEnabled` 标志，为 `true` 时执行 `composer.render()`，否则直接调用 `renderer.render()`
+1. **初始化同步**: 构造器中 `this.isEnabled = this.currentConfig.enabled`（第57行），与默认配置保持同步
+2. **配置应用**: `setConfig()` 接收外部配置并通过 `setEnabled()` 同步 `isEnabled` 标志（第122-124行）
+3. **条件渲染**: `render()` 检查 `isEnabled` 标志（第209行），为 `true` 时执行 `composer.render()`，否则直接调用 `renderer.render()`（第211行）
 
 ### 状态管理流程
 1. **事务创建**: `PBRVisualizer:459-477` - 生成状态快照

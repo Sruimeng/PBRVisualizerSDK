@@ -19,7 +19,8 @@ const visualizer = new PBRVisualizer(options: VisualizerOptions);
 - `redo(): Promise<void>` - 重做下一个事务
 - `getCurrentState(): SceneState` - 获取当前状态快照
 - `updateEnvironment(config: EnvironmentConfig): Promise<void>` - 更新环境配置
-- `updatePostProcessing(config: PostProcessConfig): Promise<void>` - 更新后处理效果
+- `updatePostProcessing(config: PostProcessState): Promise<void>` - 更新后处理效果
+- `getPostProcessSystem(): PostProcessSystem` - 获取后处理系统实例
 - `setCamera(position: Vector3 | number[], target: Vector3 | number[]): void` - 设置相机
 - `resetCamera(): void` - 重置相机到初始位置
 - `updateControls(config: ControlsConfig): void` - 更新控制配置
@@ -82,6 +83,61 @@ interface ModelConfig {
     id: string;
     source: string;
     initialTransform?: TransformState;
+}
+```
+
+### PostProcessSystem
+
+后处理系统核心类，管理EffectComposer和渲染通道。
+
+**核心方法:**
+- `setConfig(config: Partial<PostProcessState>): void` - 设置后处理配置
+- `setEnabled(enabled: boolean): void` - 启用/禁用后处理系统
+- `render(): void` - 执行后处理渲染（自动检查isEnabled标志）
+- `toggleSSAO(enabled?: boolean): void` - 切换SSAO效果
+- `toggleBloom(enabled?: boolean): void` - 切换Bloom效果
+- `adjustSSAOStrength(multiplier: number): void` - 调整SSAO强度
+- `getCurrentConfig(): PostProcessState` - 获取当前配置
+- `getPerformanceInfo(): PerformanceInfo` - 获取性能信息
+- `setSize(width: number, height: number): void` - 调整画布尺寸
+- `dispose(): void` - 清理资源
+
+### PostProcessState
+
+```typescript
+interface PostProcessState {
+    enabled: boolean;
+    toneMapping: {
+        type: THREE.ToneMapping;
+        exposure: number;
+        whitePoint: number;
+    };
+    bloom: {
+        enabled: boolean;
+        strength: number;
+        radius: number;
+        threshold: number;
+    };
+    ssao: {
+        enabled: boolean;
+        kernelRadius: number;
+        minDistance: number;
+        maxDistance: number;
+    };
+    antialiasing: {
+        type: 'fxaa' | 'msaa';
+        enabled: boolean;
+    };
+}
+```
+
+### PerformanceInfo
+
+```typescript
+interface PerformanceInfo {
+    renderTime: number;    // 后处理渲染时间(ms)
+    passCount: number;     // 渲染通道数量
+    enabled: boolean;      // 是否启用后处理
 }
 ```
 

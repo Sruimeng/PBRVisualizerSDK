@@ -34,6 +34,12 @@
 - 自动材质配置创建和增量更新
 - 独立的MaterialEditor材质编辑器类
 
+**[PostProcessSystem 后处理系统](architecture/post-processing-system.md)** - 后处理渲染管线架构
+- EffectComposer管理和条件渲染机制
+- SSAO、Bloom、色调映射效果控制
+- 初始化同步和运行时性能优化
+- 模块化效果管理和性能监控集成
+
 ## 📖 操作指南 (Guides)
 
 **[快速开始](guides/quick-start.md)** - 5分钟快速上手
@@ -186,15 +192,26 @@
 - 技术实现质量和用户体验评估
 - 改进建议和优化方向
 
+**[功能对齐调查报告](agent/feature-alignment-investigation.md)** - 后处理系统和灯光系统与参考实现的对比分析
+- PostProcessSystem初始化问题诊断和修复方案
+- 灯光系统完整性和三点布光实现验证
+- 渲染循环流程与参考实现对比分析
+
+**[Demo运行时调查报告](agent/demo-runtime-investigation.md)** - Demo文件运行环境配置和问题分析
+- TypeScript文件导入和Vite开发服务器配置分析
+- 路径别名解析和生产环境部署配置
+- 完整的开发和生产运行指南
+
 ---
 
 ## 📊 文档统计
 
-- **总文档数**: 35个（含索引）
-- **架构文档**: 3个
+- **总文档数**: 38个（含索引）
+- **概述文档**: 2个
+- **架构文档**: 4个
 - **指南文档**: 15个
 - **参考文档**: 8个
-- **分析报告**: 6个
+- **分析报告**: 8个
 - **代码示例**: 包含完整的使用示例和最佳实践
 - **源代码**: 3,261行TypeScript代码
 - **类型定义**: 343行完整类型系统
@@ -203,5 +220,6 @@
 
 - **新手入门**: [快速开始](guides/quick-start.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [API初始化配置](guides/api-setup.md)
 - **深度学习**: [项目概览](overview/project-overview.md) → [核心渲染系统](architecture/core-rendering-system.md) → [状态管理架构](architecture/state-management.md)
-- **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [Demo系统状态](reference/demo-system-status.md) → [智能分析报告](agent/)
-- **材质设计**: [材质编辑器使用指南](guides/material-editor-usage.md) → [材质和光照配置](guides/material-and-lighting-configuration.md) → [PBR材质系统](architecture/pbr-material-system.md)
+- **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [Demo系统状态](reference/demo-system-status.md) → [功能对齐调查报告](agent/feature-alignment-investigation.md) → [智能分析报告](agent/)
+- **材质设计**: [材质编辑器使用指南](guides/material-editor-usage.md) → [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [PBR材质系统](architecture/pbr-material-system.md)
+- **开发调试**: [Demo运行时调查报告](agent/demo-runtime-investigation.md) → [编码约定](reference/coding-conventions.md) → [Git约定](reference/git-conventions.md)

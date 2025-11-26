@@ -3,7 +3,7 @@ import dts from 'vite-plugin-dts';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { resolve } from 'path';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   server: {
     host: '0.0.0.0',
     port: 8080,
@@ -43,13 +43,17 @@ export default defineConfig({
       insertTypesEntry: true,
       outDir: 'dist/types'
     }),
-    viteStaticCopy({
-      targets: [
-        { src: 'ai_studio_code.html', dest: '.' },
-        { src: 'gl.html', dest: '.' },
-        { src: 'demo/**', dest: 'demo' }
-      ]
-    })
+    ...(command === 'build'
+      ? [
+          viteStaticCopy({
+            targets: [
+              { src: 'ai_studio_code.html', dest: '.' },
+              { src: 'gl.html', dest: '.' },
+              { src: 'demo/**', dest: 'demo' }
+            ]
+          })
+        ]
+      : [])
   ],
   resolve: {
     alias: {
@@ -61,4 +65,4 @@ export default defineConfig({
   optimizeDeps: {
     include: ['three', 'postprocessing']
   }
-});
+}));
