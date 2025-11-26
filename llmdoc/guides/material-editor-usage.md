@@ -225,13 +225,33 @@ public randomizeMaterial(): Promise<void>
 // 生成随机材质参数
 ```
 
+#### Debug功能方法
+```typescript
+public toggleDebug(): void
+// 一键切换Debug模式，自动更新UI按钮状态
+
+public toggleLightHelpers(): void
+// 智能切换灯光Helper显示，自动启用Debug模式
+
+public cycleBufferMode(): void
+// 循环切换SSAO Buffer可视化模式，支持中文显示
+
+public getVisualizer(): PBRVisualizer | null
+// 获取底层visualizer实例
+```
+
 ### 全局函数（已绑定到window对象）
 
 ```typescript
-// 全局函数可直接在HTML中使用
-window.applyPreset('metal');
-window.resetMaterial();
-window.randomizeMaterial();
+// 材质编辑全局函数
+window.applyPreset('metal');        // 应用材质预设
+window.resetMaterial();             // 重置材质
+window.randomizeMaterial();         // 随机材质
+
+// Debug功能全局函数
+window.toggleDebugMode();           // 切换Debug模式
+window.toggleLightHelpers();        // 切换灯光Helper
+window.cycleBufferMode();           // 循环Buffer模式
 ```
 
 ## 性能优化
@@ -391,4 +411,118 @@ A: 可以在sdk-simple.ts中扩展MATERIAL_PRESETS对象，添加自定义预设
    - 使用材质预设进行快速测试
    - 利用性能监控工具
 
-材质编辑器通过模块化TypeScript架构、完整的类型安全和完善的错误处理，为产品可视化提供了专业级的材质编辑能力。
+## Debug功能集成
+
+材质编辑器内置了完整的Debug功能支持，提供简化的调试API：
+
+### 一键式Debug控制
+
+```typescript
+// 材质编辑器实例
+const editor = new MaterialEditor();
+
+// 一键启用/禁用Debug模式
+editor.toggleDebug();
+// 自动更新UI按钮状态：
+// 🔧 开启调试 ↔ 🔧 关闭调试
+```
+
+### 智能灯光Helper控制
+
+```typescript
+// 智能切换灯光Helper显示
+// 自动检查Debug状态，未启用时先启用Debug
+editor.toggleLightHelpers();
+
+// 等价于标准Debug API的简化版本
+const debugState = visualizer.debug.getState();
+if (!debugState.enabled) {
+    visualizer.debug.enable();
+}
+visualizer.debug.setLightHelpersEnabled(!debugState.activeLightHelpers.length);
+```
+
+### Buffer模式快速切换
+
+```typescript
+// 循环切换5种SSAO Buffer模式
+editor.cycleBufferMode();
+// 支持中文模式名称：
+// 默认 → SSAO → 模糊 → 深度 → 法线 → 默认
+
+// 自动更新按钮文本显示当前模式
+// 🖼️ 默认 → 🖼️ SSAO → 🖼️ 模糊 → 🖼️ 深度 → 🖼️ 法线
+```
+
+### HTML集成示例
+
+```html
+<!-- 完整的材质编辑器 + Debug控制面板 -->
+<div class="material-editor-container">
+    <!-- 材质控制区域 -->
+    <div class="material-controls">
+        <div class="control-group">
+            <label for="color">颜色:</label>
+            <input type="color" id="color" value="#ffffff">
+        </div>
+
+        <div class="control-group">
+            <label for="metalness">金属度:</label>
+            <input type="range" id="metalness" min="0" max="1" step="0.01" value="0.5">
+            <span id="metalness-value">0.50</span>
+        </div>
+
+        <!-- 更多材质控件... -->
+
+        <div class="preset-buttons">
+            <button onclick="applyPreset('metal')">金属</button>
+            <button onclick="applyPreset('plastic')">塑料</button>
+            <button onclick="applyPreset('glass')">玻璃</button>
+        </div>
+    </div>
+
+    <!-- Debug控制区域 -->
+    <div class="debug-controls">
+        <h3>🔧 调试工具</h3>
+
+        <button id="debug-toggle-btn" onclick="toggleDebugMode()">
+            🔧 开启调试
+        </button>
+
+        <button id="light-helper-btn" onclick="toggleLightHelpers()">
+            💡 显示灯光
+        </button>
+
+        <button id="buffer-mode-btn" onclick="cycleBufferMode()">
+            🖼️ 默认
+        </button>
+    </div>
+</div>
+```
+
+### MaterialEditor Debug特性
+
+- **智能状态管理**: 自动检查并管理Debug系统状态
+- **UI同步**: 实时更新按钮文本、样式和激活状态
+- **中文界面**: Buffer模式使用中文名称，更友好
+- **全局绑定**: 所有Debug方法自动绑定到window对象
+- **错误处理**: 完善的错误检查和调试信息输出
+
+### 使用场景
+
+```typescript
+// 1. 快速灯光调试
+editor.toggleLightHelpers();  // 显示灯光Helper，调整灯光位置
+
+// 2. 材质效果对比
+editor.applyPreset('metal');  // 应用金属材质
+editor.cycleBufferMode();     // 查看SSAO效果
+
+// 3. 性能分析
+editor.toggleDebug();         // 启用性能监控面板
+
+// 4. 渲染问题诊断
+editor.cycleBufferMode();     // 逐个检查渲染Pass结果
+```
+
+材质编辑器通过模块化TypeScript架构、完整的类型安全、完善的错误处理和集成的Debug功能，为产品可视化提供了专业级的材质编辑和调试能力。

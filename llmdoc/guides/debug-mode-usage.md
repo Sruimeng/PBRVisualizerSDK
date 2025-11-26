@@ -270,9 +270,88 @@ console.log('Studio灯光Helper:', studioHelpers);
 2. 通过调整后处理质量进行优化
 3. 对比优化前后的性能指标
 
-## 10. 注意事项
+## 10. MaterialEditor Debug功能
+
+MaterialEditor类集成了简化的Debug功能，提供一键式调试API：
+
+### 基础Debug控制
+
+```javascript
+// MaterialEditor实例已绑定到全局window对象
+const editor = materialEditor;
+
+// 一键切换Debug模式
+editor.toggleDebug();
+// 或通过全局函数
+window.toggleDebugMode();
+```
+
+### 快捷灯光Helper控制
+
+```javascript
+// 智能切换灯光Helper显示
+// 自动检查Debug状态，如未启用会先启用Debug
+editor.toggleLightHelpers();
+// 或通过全局函数
+window.toggleLightHelpers();
+```
+
+### Buffer模式快速切换
+
+```javascript
+// 循环切换Buffer可视化模式
+// 支持中文模式名称显示（默认、SSAO、模糊、深度、法线）
+editor.cycleBufferMode();
+// 或通过全局函数
+window.cycleBufferMode();
+```
+
+### HTML按钮集成示例
+
+```html
+<!-- MaterialEditor Debug控制按钮 -->
+<div class="debug-controls">
+    <button id="debug-toggle-btn" onclick="toggleDebugMode()">
+        🔧 开启调试
+    </button>
+
+    <button id="light-helper-btn" onclick="toggleLightHelpers()">
+        💡 显示灯光
+    </button>
+
+    <button id="buffer-mode-btn" onclick="cycleBufferMode()">
+        🖼️ 默认
+    </button>
+</div>
+```
+
+### MaterialEditor Debug特性
+
+- **智能状态管理**: 自动检查Debug启用状态，未启用时自动激活
+- **UI状态同步**: 实时更新按钮文本和样式状态
+- **中文界面**: Buffer模式使用中文名称显示
+- **全局函数**: 所有Debug方法绑定到window对象，支持HTML直接调用
+- **错误处理**: 完善的错误检查和控制台调试信息
+
+### MaterialEditor vs 直接Debug API
+
+```javascript
+// MaterialEditor简化API - 一行代码完成
+editor.toggleLightHelpers();  // 自动启用Debug并显示Helper
+
+// 等价于标准Debug API - 需要多步操作
+const debugState = visualizer.debug.getState();
+if (!debugState.enabled) {
+    visualizer.debug.enable();
+}
+visualizer.debug.setLightHelpersEnabled(!debugState.activeLightHelpers.length);
+```
+
+## 11. 注意事项
 
 - Debug模式会增加额外的UI渲染开销，仅在开发阶段使用
 - Helper创建在调用 `setLightHelpersEnabled(true)` 时才执行
 - Buffer可视化会改变最终输出，仅用于调试，不影响模型渲染
 - 性能监控的准确性取决于浏览器的WebGL扩展支持
+- MaterialEditor的Debug功能依赖底层DebugSystem，确保在使用前MaterialEditor已正确初始化
+- 全局函数绑定要求MaterialEditor实例在window.onload之前创建

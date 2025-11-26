@@ -64,7 +64,10 @@ export class MaterialSystem {
             emissiveIntensity: config.emissiveIntensity || 0,
             normalScale: new THREE.Vector2(1, config.normalScale || 1),
             aoMapIntensity: config.aoMapIntensity || 1,
-            envMapIntensity: config.envMapIntensity || 1
+            envMapIntensity: config.envMapIntensity || 1,
+            // 透明度支持
+            transparent: config.transparent ?? false,
+            opacity: config.opacity ?? 1.0
         });
 
         // 设置纹理
@@ -207,6 +210,14 @@ export class MaterialSystem {
                 }
                 if (config.envMapIntensity !== undefined) {
                     material.envMapIntensity = config.envMapIntensity;
+                }
+
+                // 透明度支持
+                if (config.transparent !== undefined) {
+                    material.transparent = config.transparent;
+                }
+                if (config.opacity !== undefined) {
+                    material.opacity = config.opacity;
                 }
 
                 // 标记材质需要更新

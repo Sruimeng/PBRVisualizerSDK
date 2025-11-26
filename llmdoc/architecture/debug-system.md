@@ -11,6 +11,7 @@
 - `src/core/LightSystem.ts` (setHelpersEnabled, createAllHelpers, getAllHelperInfo, setHelperScale): 灯光Helper功能，支持4种Helper类型和Studio三点布光可视化
 - `src/core/PostProcessSystem.ts` (setSSAOOutputMode, cycleOutputMode, resetOutputMode): Buffer可视化功能，支持5种输出模式
 - `src/PBRVisualizer.ts` (debug getter): 主类Debug API暴露接口
+- `demo/src/sdk-simple.ts` (MaterialEditor.toggleDebug, toggleLightHelpers, cycleBufferMode): MaterialEditor类集成的Debug功能方法，提供简化的调试API
 - `src/types/core.ts` (DebugConfig, DebugState, SSAOOutputMode, LightHelperInfo): Debug系统类型定义
 
 ## 3. 执行流程（LLM检索地图）
@@ -47,6 +48,13 @@
 - **1. 性能获取**: `DebugSystem:311-324` - 通过requestAnimationFrame定期调用getPerformanceStats()
 - **2. 数据更新**: 性能统计包含fps、drawCalls、triangles，由Renderer.ts收集并实时更新
 - **3. UI显示**: 性能数据绑定到lil-gui的监听属性，实时显示在面板中
+
+### MaterialEditor Debug工作流
+
+- **1. Debug模式切换**: `sdk-simple.ts:351-366` - toggleDebug()方法调用debug.toggle()并更新UI按钮状态
+- **2. 灯光Helper切换**: `sdk-simple.ts:371-394` - toggleLightHelpers()方法智能检查Debug状态并自动启用
+- **3. Buffer模式循环**: `sdk-simple.ts:399-428` - cycleBufferMode()方法循环切换5种Buffer模式并更新按钮文本
+- **4. 全局函数绑定**: `sdk-simple.ts:463-481` - 全局window对象绑定debug函数，支持HTML直接调用
 
 ## 4. 设计要点
 

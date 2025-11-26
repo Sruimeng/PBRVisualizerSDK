@@ -11,7 +11,8 @@ import {
     BatchUpdate,
     StateTransaction,
     PerformanceStats,
-    ErrorEvent
+    ErrorEvent,
+    StateMachineConfig
 } from './types';
 
 import { Renderer } from './core/Renderer';
@@ -20,6 +21,7 @@ import { LightSystem } from './core/LightSystem';
 import { PostProcessSystem } from './core/PostProcessSystem';
 import { MaterialSystem } from './core/MaterialSystem';
 import { DebugSystem } from './core/DebugSystem';
+import { AnimationStateMachine } from './core/AnimationStateMachine';
 
 /**
  * PBR可视化器主类
@@ -54,8 +56,13 @@ export class PBRVisualizer {
 
     // 模型管理
     private models = new Map<string, THREE.Object3D>();
+    private modelAnimations = new Map<string, THREE.AnimationClip[]>();
+    private modelMixers = new Map<string, THREE.AnimationMixer>();
     private gltfLoader!: GLTFLoader;
     private dracoLoader!: DRACOLoader;
+
+    // 状态机管理
+    private stateMachines = new Map<string, AnimationStateMachine>();
 
     // 事件系统
     private eventListeners = new Map<string, Function[]>();
@@ -319,13 +326,27 @@ export class PBRVisualizer {
      * 开始渲染循环
      */
     private startRenderLoop(): void {
+        const clock = new THREE.Clock();
+
         const animate = () => {
             if (this.isDisposed) return;
 
             requestAnimationFrame(animate);
 
+            const deltaTime = clock.getDelta();
+
             // 更新控制器
             this.controls.update();
+
+            // 更新所有AnimationMixer
+            this.modelMixers.forEach((mixer) => {
+                mixer.update(deltaTime);
+            });
+
+            // 更新所有状态机
+            this.stateMachines.forEach((stateMachine) => {
+                stateMachine.update(deltaTime);
+            });
 
             // 渲染场景
             this.postProcessSystem.render();
@@ -366,9 +387,28 @@ export class PBRVisualizer {
             this.scene.add(model);
             this.models.set(id, model);
 
+            // 保存动画
+            const animations: THREE.AnimationClip[] = gltf.animations || [];
+            this.modelAnimations.set(id, animations);
+
+            // 创建AnimationMixer（如果有动画）
+            if (animations.length > 0) {
+                const mixer = new THREE.AnimationMixer(model);
+                this.modelMixers.set(id, mixer);
+                console.log(`[PBRVisualizer] Model '${id}' has ${animations.length} animations:`,
+                    animations.map((anim: THREE.AnimationClip) => anim.name));
+            }
+
             // 创建模型状态
             this.currentState.models[id] = {
-                animations: [],
+                animations: animations.map((_clip: THREE.AnimationClip, index: number) => ({
+                    id: `${id}_anim_${index}`,
+                    enabled: false,
+                    currentAnimation: index,
+                    speed: 1.0,
+                    loop: true,
+                    playing: false
+                })),
                 material: initialState?.material || this.materialSystem.createPresetMaterial('metal'),
                 visible: true,
                 transform: {
@@ -825,5 +865,151 @@ export class PBRVisualizer {
      */
     public get debug(): DebugSystem {
         return this.debugSystem;
+    }
+
+    // ========================
+    // 状态机API
+    // ========================
+
+    /**
+     * 为模型创建状态机
+     *
+     * @example
+     * // 创建一个简单的动画切换状态机
+     * const stateMachine = visualizer.createStateMachine('myModel', {
+     *     id: 'animationFSM',
+     *     initialState: 'idle',
+     *     states: [
+     *         { id: 'idle', name: '待机', animationName: 'NlaTrack' },
+     *         { id: 'action', name: '动作', animationName: 'NlaTrack.001' }
+     *     ],
+     *     transitions: [
+     *         {
+     *             id: 'idle_to_action',
+     *             from: 'idle',
+     *             to: 'action',
+     *             condition: { type: 'immediate' },
+     *             effect: { type: 'fade', duration: 500, easing: 'easeOutCubic' }
+     *         }
+     *     ]
+     * });
+     *
+     * stateMachine.start();
+     * stateMachine.trigger('idle_to_action');
+     */
+    public createStateMachine(modelId: string, config: StateMachineConfig): AnimationStateMachine | null {
+        const model = this.models.get(modelId);
+        const animations = this.modelAnimations.get(modelId);
+
+        if (!model) {
+            console.warn(`[PBRVisualizer] Model '${modelId}' not found`);
+            return null;
+        }
+
+        if (!animations || animations.length === 0) {
+            console.warn(`[PBRVisualizer] Model '${modelId}' has no animations`);
+            return null;
+        }
+
+        // 创建状态机
+        const stateMachine = new AnimationStateMachine(config);
+
+        // 绑定模型和动画
+        stateMachine.bind(model, animations);
+
+        // 保存状态机
+        const key = `${modelId}_${config.id}`;
+        this.stateMachines.set(key, stateMachine);
+
+        console.log(`[PBRVisualizer] Created state machine '${config.id}' for model '${modelId}'`);
+
+        return stateMachine;
+    }
+
+    /**
+     * 获取模型的状态机
+     */
+    public getStateMachine(modelId: string, stateMachineId: string): AnimationStateMachine | null {
+        const key = `${modelId}_${stateMachineId}`;
+        return this.stateMachines.get(key) || null;
+    }
+
+    /**
+     * 移除状态机
+     */
+    public removeStateMachine(modelId: string, stateMachineId: string): boolean {
+        const key = `${modelId}_${stateMachineId}`;
+        const stateMachine = this.stateMachines.get(key);
+
+        if (stateMachine) {
+            stateMachine.dispose();
+            this.stateMachines.delete(key);
+            console.log(`[PBRVisualizer] Removed state machine '${stateMachineId}' from model '${modelId}'`);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 获取模型的所有动画名称
+     */
+    public getModelAnimations(modelId: string): string[] {
+        const animations = this.modelAnimations.get(modelId);
+        return animations ? animations.map(clip => clip.name) : [];
+    }
+
+    /**
+     * 播放模型的指定动画（不使用状态机）
+     */
+    public playAnimation(modelId: string, animationName: string, options?: {
+        loop?: boolean;
+        speed?: number;
+        fadeIn?: number;
+    }): boolean {
+        const mixer = this.modelMixers.get(modelId);
+        const animations = this.modelAnimations.get(modelId);
+
+        if (!mixer || !animations) {
+            console.warn(`[PBRVisualizer] Model '${modelId}' has no animation support`);
+            return false;
+        }
+
+        const clip = animations.find(a => a.name === animationName);
+        if (!clip) {
+            console.warn(`[PBRVisualizer] Animation '${animationName}' not found in model '${modelId}'`);
+            return false;
+        }
+
+        const action = mixer.clipAction(clip);
+
+        // 应用选项
+        if (options?.loop !== undefined) {
+            action.setLoop(options.loop ? THREE.LoopRepeat : THREE.LoopOnce, options.loop ? Infinity : 1);
+        }
+        if (options?.speed !== undefined) {
+            action.timeScale = options.speed;
+        }
+
+        // 播放动画
+        action.reset();
+        if (options?.fadeIn !== undefined) {
+            action.fadeIn(options.fadeIn / 1000);
+        }
+        action.play();
+
+        console.log(`[PBRVisualizer] Playing animation '${animationName}' on model '${modelId}'`);
+        return true;
+    }
+
+    /**
+     * 停止模型的所有动画
+     */
+    public stopAllAnimations(modelId: string): void {
+        const mixer = this.modelMixers.get(modelId);
+        if (mixer) {
+            mixer.stopAllAction();
+            console.log(`[PBRVisualizer] Stopped all animations on model '${modelId}'`);
+        }
     }
 }

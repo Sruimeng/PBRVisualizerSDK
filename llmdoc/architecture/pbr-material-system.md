@@ -14,10 +14,11 @@
 - **更新机制**: 支持自动创建材质配置，无需预先定义
 
 ### 材质编辑器类 (`src/demo/sdk-simple.ts:MaterialEditor`)
-- **核心功能**: 独立的材质编辑器实现，与主系统分离
-- **关键职责**: UI控制器、材质预设、参数验证、错误处理
-- **架构模式**: 模块化设计，支持独立初始化和配置
+- **核心功能**: 独立的材质编辑器实现，集成Debug功能，与主系统分离
+- **关键职责**: UI控制器、材质预设、参数验证、错误处理、Debug功能集成
+- **架构模式**: 模块化设计，支持独立初始化和配置，内置Debug简化和代理
 - **类型安全**: 完整的TypeScript类型定义（MaterialParams, MaterialPreset）
+- **Debug集成**: 提供toggleDebug()、toggleLightHelpers()、cycleBufferMode()等简化调试API
 
 ### 材质状态接口 (`src/types/core.ts:128-154`)
 - **MaterialState**: PBR材质的核心参数定义
@@ -51,10 +52,16 @@
 5. **标记更新**: `MaterialSystem:203` - 设置material.needsUpdate触发GPU同步
 
 ### 材质编辑器流程
-1. **MaterialEditor类**: `sdk-simple.ts:80-285` - 独立的材质编辑器封装类
+1. **MaterialEditor类**: `sdk-simple.ts:80-285` - 独立的材质编辑器封装类，集成Debug功能
 2. **初始化**: `sdk-simple.ts:91-172` - 创建MaterialEditor实例和PBRVisualizer
 3. **参数更新**: `sdk-simple.ts:204-239` - 转换参数并调用visualizer.updateModel
 4. **错误处理**: `sdk-simple.ts:210-243` - 完善的错误处理和调试信息输出
+
+### MaterialEditor Debug流程
+1. **Debug模式切换**: `sdk-simple.ts:351-366` - toggleDebug()智能切换Debug状态并更新UI
+2. **灯光Helper控制**: `sdk-simple.ts:371-394` - toggleLightHelpers()自动启用Debug并控制Helper显示
+3. **Buffer模式循环**: `sdk-simple.ts:399-428` - cycleBufferMode()循环切换SSAO Buffer模式，支持中文显示
+4. **全局函数绑定**: `sdk-simple.ts:463-481` - window对象绑定debug函数，支持HTML直接调用
 
 ### 性能优化流程
 1. **模型优化**: `MaterialSystem:211-253` - 自动优化模型材质属性

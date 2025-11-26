@@ -10,4 +10,5 @@ export { EnvironmentSystem } from './core/EnvironmentSystem';
 export { LightSystem } from './core/LightSystem';
 export { PostProcessSystem } from './core/PostProcessSystem';
 export { MaterialSystem } from './core/MaterialSystem';
+export { AnimationStateMachine, EASING_FUNCTIONS, DEFAULT_EFFECT, FADE_PRESETS } from './core/AnimationStateMachine';
 

@@ -437,3 +437,169 @@ export interface LightHelperInfo {
   // Helper是否可见
   visible: boolean;
 }
+
+// ========================
+// 动画状态机类型定义
+// ========================
+
+/**
+ * 过渡效果类型
+ */
+export enum TransitionEffectType {
+  /** 无过渡效果 */
+  None = 'none',
+  /** 淡入淡出 */
+  Fade = 'fade',
+  /** 缩放 */
+  Scale = 'scale',
+  /** 淡入淡出 + 缩放组合 */
+  FadeScale = 'fadeScale'
+}
+
+/**
+ * 缓动函数类型
+ */
+export type EasingFunction = (t: number) => number;
+
+/**
+ * 内置缓动函数名称
+ */
+export type EasingType =
+  | 'linear'
+  | 'easeInQuad'
+  | 'easeOutQuad'
+  | 'easeInOutQuad'
+  | 'easeInCubic'
+  | 'easeOutCubic'
+  | 'easeInOutCubic'
+  | 'easeInElastic'
+  | 'easeOutElastic'
+  | 'easeInOutElastic';
+
+/**
+ * 过渡效果配置
+ */
+export interface TransitionEffectConfig {
+  /** 效果类型 */
+  type: TransitionEffectType;
+  /** 过渡持续时间（毫秒） */
+  duration: number;
+  /** 缓动函数类型 */
+  easing: EasingType;
+  /** 淡入淡出的目标透明度范围 [最小值, 最大值] */
+  opacityRange?: [number, number];
+  /** 缩放的目标范围 [最小值, 最大值] */
+  scaleRange?: [number, number];
+}
+
+/**
+ * 状态机状态定义
+ */
+export interface StateMachineState {
+  /** 状态ID */
+  id: string;
+  /** 状态名称（显示用） */
+  name: string;
+  /** 关联的动画索引 */
+  animationIndex?: number;
+  /** 关联的动画名称（优先于索引） */
+  animationName?: string;
+  /** 进入此状态时的过渡效果 */
+  enterEffect?: TransitionEffectConfig;
+  /** 离开此状态时的过渡效果 */
+  exitEffect?: TransitionEffectConfig;
+  /** 进入状态时的回调 */
+  onEnter?: () => void;
+  /** 离开状态时的回调 */
+  onExit?: () => void;
+  /** 状态更新时的回调（每帧） */
+  onUpdate?: (deltaTime: number) => void;
+  /** 自定义数据 */
+  data?: Record<string, any>;
+}
+
+/**
+ * 状态转换条件
+ */
+export interface TransitionCondition {
+  /** 条件类型 */
+  type: 'immediate' | 'animationEnd' | 'timeout' | 'custom';
+  /** 超时时间（毫秒，type为timeout时有效） */
+  timeout?: number;
+  /** 自定义条件判断函数（type为custom时有效） */
+  predicate?: () => boolean;
+}
+
+/**
+ * 状态转换定义
+ */
+export interface StateTransition {
+  /** 转换ID */
+  id: string;
+  /** 源状态ID */
+  from: string;
+  /** 目标状态ID */
+  to: string;
+  /** 转换条件 */
+  condition: TransitionCondition;
+  /** 转换时的过渡效果（覆盖状态默认效果） */
+  effect?: TransitionEffectConfig;
+  /** 优先级（数值越大优先级越高） */
+  priority?: number;
+  /** 转换开始时的回调 */
+  onStart?: () => void;
+  /** 转换完成时的回调 */
+  onComplete?: () => void;
+}
+
+/**
+ * 状态机配置
+ */
+export interface StateMachineConfig {
+  /** 状态机ID */
+  id: string;
+  /** 初始状态ID */
+  initialState: string;
+  /** 状态列表 */
+  states: StateMachineState[];
+  /** 转换列表 */
+  transitions: StateTransition[];
+  /** 默认过渡效果 */
+  defaultEffect?: TransitionEffectConfig;
+  /** 是否启用调试日志 */
+  debug?: boolean;
+}
+
+/**
+ * 状态机运行时状态（只读）
+ */
+export interface StateMachineRuntimeState {
+  /** 当前状态ID */
+  currentState: string;
+  /** 上一个状态ID */
+  previousState: string | null;
+  /** 是否正在过渡 */
+  isTransitioning: boolean;
+  /** 当前过渡进度（0-1） */
+  transitionProgress: number;
+  /** 状态机是否已启动 */
+  isRunning: boolean;
+  /** 当前动画名称 */
+  currentAnimation: string | null;
+}
+
+/**
+ * 状态机事件
+ */
+export interface StateMachineEvent {
+  /** 事件类型 */
+  type: 'stateEnter' | 'stateExit' | 'transitionStart' | 'transitionEnd' | 'animationEnd';
+  /** 状态机ID */
+  stateMachineId: string;
+  /** 当前状态 */
+  currentState: string;
+  /** 上一个状态 */
+  previousState?: string;
+  /** 时间戳 */
+  timestamp: number;
+}

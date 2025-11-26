@@ -45,12 +45,31 @@
 - Buffer可视化调试（5种输出模式）
 - lil-gui集成的实时调试面板
 - 性能监控集成
+- MaterialEditor集成Debug功能（toggleDebug、toggleLightHelpers、cycleBufferMode）
+
+**[动画状态机系统](architecture/animation-state-machine.md)** - 有限状态机(FSM)动画控制系统
+- 完整FSM实现：状态、转换、条件
+- 过渡效果：淡入淡出、缩放、组合效果
+- 10种内置缓动函数
+- 事件驱动架构和调试支持
+
+**[Debug系统增强](architecture/debug-system-enhancement.md)** - MaterialEditor集成Debug功能详解
+- 新增toggleDebug()、toggleLightHelpers()、cycleBufferMode()方法
+- 全局函数绑定和智能状态管理
+- UI状态同步和中文界面支持
+- 简化Debug API使用指南
 
 ## 📖 操作指南 (Guides)
 
 **[快速开始](guides/quick-start.md)** - 5分钟快速上手
 - 基础初始化和配置
 - 第一个模型加载和渲染
+
+**[材质和光照配置工作流程](guides/material-and-lighting-configuration.md)** - 材质和灯光配置的完整工作流程
+- 材质参数配置和调节流程
+- Studio灯光三点布光设置
+- 环境HDR配置和切换
+- 材质与光照的协同配置
 
 **[材质编辑器使用指南](guides/material-editor-usage.md)** - 专业材质编辑器使用教程
 - 材质参数实时调节
@@ -127,6 +146,13 @@
 - Buffer输出模式调试
 - 性能监控和优化
 - lil-gui面板控制
+- MaterialEditor简化Debug API（toggleDebug、toggleLightHelpers、cycleBufferMode）
+
+**[状态机淡入淡出效果增强指南](guides/animation-fade-enhancement.md)** - 动画过渡效果优化指南
+- 5种预设过渡效果配置（strong、dramatic、natural、quick、character）
+- 增强透明度对比度配置和最佳实践
+- 角色动画切换专用效果
+- 自定义缓动函数和组合效果
 
 ## 📚 参考资料 (Reference)
 
@@ -214,24 +240,29 @@
 - 路径别名解析和生产环境部署配置
 - 完整的开发和生产运行指南
 
+**[Debug模式实现调查报告](agent/debug-mode-implementation-investigation.md)** - Debug系统实现机制和技术细节分析
+- Debug模式核心实现机制分析
+- MaterialEditor调试功能集成方案
+- 性能影响和优化策略评估
+
 ---
 
 ## 📊 文档统计
 
-- **总文档数**: 40个（含索引）
+- **总文档数**: 44个（含索引）
 - **概述文档**: 2个
-- **架构文档**: 5个（新增Debug系统）
-- **指南文档**: 16个（新增Debug模式使用）
+- **架构文档**: 7个（包含动画状态机系统、Debug系统增强）
+- **指南文档**: 18个（新增材质和光照配置工作流程、状态机淡入淡出效果增强指南）
 - **参考文档**: 8个
-- **分析报告**: 8个
+- **分析报告**: 9个（新增Debug模式实现调查报告）
 - **代码示例**: 包含完整的使用示例和最佳实践
-- **源代码**: 3,261行TypeScript代码
-- **类型定义**: 343行完整类型系统
+- **源代码**: 约4,000行TypeScript代码
+- **类型定义**: 约600行完整类型系统
 
 ## 🔗 快速导航
 
-- **新手入门**: [快速开始](guides/quick-start.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [API初始化配置](guides/api-setup.md)
-- **深度学习**: [项目概览](overview/project-overview.md) → [核心渲染系统](architecture/core-rendering-system.md) → [状态管理架构](architecture/state-management.md)
-- **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [Demo系统状态](reference/demo-system-status.md) → [功能对齐调查报告](agent/feature-alignment-investigation.md) → [智能分析报告](agent/)
-- **材质设计**: [材质编辑器使用指南](guides/material-editor-usage.md) → [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [PBR材质系统](architecture/pbr-material-system.md)
-- **开发调试**: [Debug模式使用指南](guides/debug-mode-usage.md) → [Debug系统架构](architecture/debug-system.md) → [Demo运行时调查报告](agent/demo-runtime-investigation.md) → [编码约定](reference/coding-conventions.md) → [Git约定](reference/git-conventions.md)
+- **新手入门**: [快速开始](guides/quick-start.md) → [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [状态机淡入淡出效果增强指南](guides/animation-fade-enhancement.md) → [API初始化配置](guides/api-setup.md)
+- **深度学习**: [项目概览](overview/project-overview.md) → [核心渲染系统](architecture/core-rendering-system.md) → [状态管理架构](architecture/state-management.md) → [动画状态机系统](architecture/animation-state-machine.md)
+- **问题解决**: [API使用示例](reference/api-examples.md) → [代码示例](reference/code-examples.md) → [Demo系统状态](reference/demo-system-status.md) → [功能对齐调查报告](agent/feature-alignment-investigation.md) → [Demo运行时调查报告](agent/demo-runtime-investigation.md) → [智能分析报告](agent/)
+- **材质设计**: [材质和光照配置工作流程](guides/material-and-lighting-configuration.md) → [材质编辑器使用指南](guides/material-editor-usage.md) → [PBR材质系统](architecture/pbr-material-system.md) → [PBR材质创建工作流](guides/pbr-material-creation-workflow.md)
+- **开发调试**: [Debug模式使用指南](guides/debug-mode-usage.md) → [Debug系统架构](architecture/debug-system.md) → [Debug系统增强](architecture/debug-system-enhancement.md) → [Debug模式实现调查报告](agent/debug-mode-implementation-investigation.md) → [编码约定](reference/coding-conventions.md) → [Git约定](reference/git-conventions.md)
