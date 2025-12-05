@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PBR Visualizer - 预设切换演示</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+          Arial, sans-serif;
+        background: #f5f5f5;
+        color: #333;
+        overflow: hidden;
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: 280px 1fr 320px;
+        gap: 12px;
+        height: 100vh;
+        padding: 12px;
+      }
+
+      /* 左侧面板 */
+      .left-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+      }
+
+      .panel-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      select,
+      input[type='text'] {
+        padding: 8px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 13px;
+        background: white;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      select:hover,
+      input[type='text']:hover {
+        border-color: #d0d0d0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      select:focus,
+      input[type='text']:focus {
+        outline: none;
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+      }
+
+      .button-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .quick-button {
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .quick-button:hover {
+        background: #e8e8e8;
+        border-color: #d0d0d0;
+      }
+
+      .quick-button.active {
+        background: #4a90e2;
+        color: white;
+        border-color: #3a7bc8;
+      }
+
+      .divider {
+        height: 1px;
+        background: #e0e0e0;
+        margin: 8px 0;
+      }
+
+      /* 中间3D视图 */
+      .center-panel {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        position: relative;
+      }
+
+      #app {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* 右侧配置面板 */
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+      }
+
+      .config-section {
+        padding: 12px;
+        background: #f9f9f9;
+        border-radius: 4px;
+        border-left: 3px solid #4a90e2;
+      }
+
+      .config-section h4 {
+        font-size: 12px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .config-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        font-size: 12px;
+        border-bottom: 1px solid #e8e8e8;
+      }
+
+      .config-item:last-child {
+        border-bottom: none;
+      }
+
+      .config-item label {
+        margin: 0;
+        color: #666;
+      }
+
+      .config-item span {
+        color: #333;
+        font-weight: 500;
+        text-align: right;
+      }
+
+      #scene-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      #scene-description {
+        font-size: 12px;
+        color: #666;
+        line-height: 1.4;
+        margin-bottom: 12px;
+      }
+
+      #material-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      /* 信息提示 */
+      .info-box {
+        background: #e3f2fd;
+        border-left: 3px solid #2196f3;
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #1565c0;
+        margin-top: 8px;
+      }
+
+      /* 滚动条样式 */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #d0d0d0;
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a0a0a0;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 1400px) {
+        .container {
+          grid-template-columns: 240px 1fr 280px;
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .container {
+          grid-template-columns: 1fr;
+          gap: 0;
+          padding: 0;
+        }
+
+        .left-panel,
+        .right-panel {
+          display: none;
+        }
+
+        .center-panel {
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- 左侧控制面板 -->
+      <div class="left-panel">
+        <!-- 场景选择 -->
+        <div class="control-group">
+          <div class="panel-title">场景预设</div>
+          <label for="scene-select">选择场景</label>
+          <select id="scene-select" onchange="switchScene(this.value)">
+            <option value="product-showcase">产品展示</option>
+            <option value="character-display">角色展示</option>
+            <option value="tech-modern">科技现代</option>
+            <option value="artistic-gallery">艺术画廊</option>
+            <option value="minimal-clean">极简清洁</option>
+          </select>
+
+          <div class="button-group">
+            <button class="quick-button active" onclick="switchScene('product-showcase')">产品</button>
+            <button class="quick-button" onclick="switchScene('character-display')">角色</button>
+            <button class="quick-button" onclick="switchScene('tech-modern')">科技</button>
+            <button class="quick-button" onclick="switchScene('artistic-gallery')">艺术</button>
+            <button class="quick-button" onclick="switchScene('minimal-clean')">极简</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 模型选择 -->
+        <div class="control-group">
+          <div class="panel-title">模型选择</div>
+          <label for="model-select">选择模型</label>
+          <select id="model-select" onchange="switchModel(this.value)">
+            <option value="/demo/glb/test.glb">标准模型</option>
+            <option value="/demo/glb/Camera_XHS_17479384306051040g00831hpgdts3jo6g5pmo3n0nc99qji23br8.glb">
+              相机模型
+            </option>
+            <option value="/demo/glb/military+character+3d+model_Clone1.glb">军事角色</option>
+            <option value="/demo/glb/moon_knight_mecha_marvel_rivals.glb">月骑士机甲</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 材质库选择 -->
+        <div class="control-group">
+          <div class="panel-title">材质库</div>
+          <label for="library-select">选择库</label>
+          <select id="library-select" onchange="switchMaterialLibrary(this.value)">
+            <option value="metals">金属材质</option>
+            <option value="plastics">塑料材质</option>
+            <option value="glass">玻璃材质</option>
+            <option value="special">特殊材质</option>
+          </select>
+
+          <div class="button-group">
+            <button class="quick-button" onclick="switchMaterialLibrary('metals')">金属</button>
+            <button class="quick-button" onclick="switchMaterialLibrary('plastics')">塑料</button>
+            <button class="quick-button" onclick="switchMaterialLibrary('glass')">玻璃</button>
+            <button class="quick-button" onclick="switchMaterialLibrary('special')">特殊</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 材质选择 -->
+        <div class="control-group">
+          <div class="panel-title">具体材质</div>
+          <label for="material-select">选择材质</label>
+          <select id="material-select" onchange="switchMaterial(this.value)"></select>
+        </div>
+
+        <div class="info-box">
+          <strong>提示:</strong> 点击下拉框或快捷按钮快速切换预设
+        </div>
+      </div>
+
+      <!-- 中间 3D 渲染区域 -->
+      <div class="center-panel">
+        <div id="app"></div>
+      </div>
+
+      <!-- 右侧配置显示面板 -->
+      <div class="right-panel">
+        <div class="panel-title">当前场景</div>
+        <div id="scene-name">产品展示</div>
+        <div id="scene-description">专业的产品展示场景，明亮专业，适合电商产品拍摄</div>
+
+        <div class="divider"></div>
+
+        <div class="panel-title">当前材质</div>
+        <div id="material-name">抛光钢</div>
+
+        <div class="divider"></div>
+
+        <div id="config-display">
+          <div class="config-section">
+            <h4>场景配置</h4>
+            <div class="config-item">
+              <label>加载中...</label>
+              <span>-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SDK 脚本 -->
+    <script type="module">
+      import { initPresetSwitcherDemo } from '/demo/src/preset-switcher.ts';
+
+      // 初始化演示
+      window.demoInstance = initPresetSwitcherDemo();
+
+      // 更新快速按钮样式
+      function updateQuickButtons(type, value) {
+        const buttons = document.querySelectorAll(`.quick-button`);
+        buttons.forEach((btn) => {
+          btn.classList.remove('active');
+        });
+        // 根据不同类型更新对应的按钮
+        const activeBtn = Array.from(buttons).find(
+          (btn) => btn.textContent.includes(value) || btn.onclick?.toString().includes(value),
+        );
+        if (activeBtn) {
+          activeBtn.classList.add('active');
+        }
+      }
+
+      // 全局函数 - 切换场景
+      window.switchScene = async (sceneName) => {
+        try {
+          await window.demoInstance.switchScene(sceneName);
+          updateQuickButtons('scene', sceneName);
+        } catch (error) {
+          console.error('Error switching scene:', error);
+        }
+      };
+
+      // 全局函数 - 切换材质库
+      window.switchMaterialLibrary = async (libraryName) => {
+        try {
+          await window.demoInstance.switchMaterialLibrary(libraryName);
+          updateQuickButtons('library', libraryName);
+        } catch (error) {
+          console.error('Error switching material library:', error);
+        }
+      };
+
+      // 全局函数 - 切换材质
+      window.switchMaterial = async (materialId) => {
+        try {
+          await window.demoInstance.switchMaterial(materialId);
+        } catch (error) {
+          console.error('Error switching material:', error);
+        }
+      };
+
+      // 全局函数 - 切换模型
+      window.switchModel = async (modelUrl) => {
+        try {
+          await window.demoInstance.switchModel(modelUrl);
+        } catch (error) {
+          console.error('Error switching model:', error);
+        }
+      };
+
+      console.log('Preset Switcher Demo loaded successfully');
+    </script>
+  </body>
+</html>

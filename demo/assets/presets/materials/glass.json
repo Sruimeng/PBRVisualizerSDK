@@ -1,0 +1,91 @@
+{
+  "category": "glass",
+  "name": "玻璃材质库",
+  "description": "各种玻璃材质预设，从清玻璃到彩色玻璃",
+  "presets": [
+    {
+      "id": "clear-glass",
+      "name": "清玻璃",
+      "description": "透明无色的清玻璃材质",
+      "material": {
+        "color": "#f0f8ff",
+        "metalness": 0.0,
+        "roughness": 0.05,
+        "envMapIntensity": 1.2,
+        "transmission": 0.95,
+        "opacity": 1.0,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "frosted-glass",
+      "name": "磨砂玻璃",
+      "description": "磨砂质感的磨砂玻璃",
+      "material": {
+        "color": "#e8e8e8",
+        "metalness": 0.0,
+        "roughness": 0.4,
+        "envMapIntensity": 0.8,
+        "transmission": 0.7,
+        "opacity": 0.95,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "blue-glass",
+      "name": "蓝色玻璃",
+      "description": "深蓝色的彩色玻璃",
+      "material": {
+        "color": "#1e40af",
+        "metalness": 0.0,
+        "roughness": 0.08,
+        "envMapIntensity": 1.1,
+        "transmission": 0.85,
+        "opacity": 0.95,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "amber-glass",
+      "name": "琥珀玻璃",
+      "description": "温暖的琥珀色玻璃",
+      "material": {
+        "color": "#d4a574",
+        "metalness": 0.0,
+        "roughness": 0.1,
+        "envMapIntensity": 1.0,
+        "transmission": 0.8,
+        "opacity": 0.9,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "thick-glass",
+      "name": "厚玻璃",
+      "description": "厚重的低透射率玻璃",
+      "material": {
+        "color": "#b0e0e6",
+        "metalness": 0.0,
+        "roughness": 0.15,
+        "envMapIntensity": 1.2,
+        "transmission": 0.5,
+        "opacity": 0.98,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "mirror-glass",
+      "name": "镜面玻璃",
+      "description": "高反射的镜面玻璃",
+      "material": {
+        "color": "#ffffff",
+        "metalness": 0.1,
+        "roughness": 0.02,
+        "envMapIntensity": 1.4,
+        "transmission": 0.1,
+        "opacity": 1.0,
+        "aoMapIntensity": 1.0
+      }
+    }
+  ]
+}

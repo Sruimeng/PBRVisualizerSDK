@@ -1,0 +1,70 @@
+{
+  "id": "minimal-clean",
+  "name": "极简清洁",
+  "description": "极简风格的清洁场景，最少后处理效果，突出模型本身细节",
+  "environment": {
+    "url": "/demo/hdr/env.hdr",
+    "intensity": 1.0,
+    "studio": true
+  },
+  "camera": {
+    "position": {
+      "x": 0,
+      "y": 1.0,
+      "z": 4.0
+    },
+    "target": {
+      "x": 0,
+      "y": 0.5,
+      "z": 0
+    },
+    "fov": 35,
+    "near": 0.1,
+    "far": 1000,
+    "controls": {
+      "enabled": true,
+      "autoRotate": false,
+      "autoRotateSpeed": 0
+    }
+  },
+  "postProcessing": {
+    "enabled": true,
+    "bloom": {
+      "enabled": false,
+      "strength": 0,
+      "radius": 0,
+      "threshold": 1.0
+    },
+    "ssao": {
+      "enabled": false,
+      "kernelRadius": 4,
+      "minDistance": 0.005,
+      "maxDistance": 0.1
+    },
+    "toneMapping": {
+      "type": "ACESFilmicToneMapping",
+      "exposure": 1.0,
+      "whitePoint": 1.0
+    },
+    "antialiasing": {
+      "type": "fxaa",
+      "enabled": true
+    }
+  },
+  "vignette": {
+    "enabled": false,
+    "color1": "#ffffff",
+    "color2": "#ffffff",
+    "smoothness": 0.0,
+    "brightness": 0.0,
+    "radiusScale": 1.0
+  },
+  "defaultMaterial": {
+    "color": "#cccccc",
+    "metalness": 0.2,
+    "roughness": 0.4,
+    "envMapIntensity": 1.0,
+    "aoMapIntensity": 1.0
+  },
+  "tags": ["minimal", "clean", "simple", "no-effects", "detail-focused"]
+}

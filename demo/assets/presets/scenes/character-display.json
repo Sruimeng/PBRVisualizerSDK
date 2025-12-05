@@ -1,0 +1,70 @@
+{
+  "id": "character-display",
+  "name": "角色展示",
+  "description": "柔和温暖的角色展示场景，适合人物或角色模型展示",
+  "environment": {
+    "url": "/demo/hdr/env.hdr",
+    "intensity": 0.9,
+    "studio": false
+  },
+  "camera": {
+    "position": {
+      "x": 0,
+      "y": 1.5,
+      "z": 3.0
+    },
+    "target": {
+      "x": 0,
+      "y": 1.0,
+      "z": 0
+    },
+    "fov": 50,
+    "near": 0.1,
+    "far": 1000,
+    "controls": {
+      "enabled": true,
+      "autoRotate": true,
+      "autoRotateSpeed": 1.5
+    }
+  },
+  "postProcessing": {
+    "enabled": true,
+    "bloom": {
+      "enabled": true,
+      "strength": 0.4,
+      "radius": 0.5,
+      "threshold": 0.8
+    },
+    "ssao": {
+      "enabled": true,
+      "kernelRadius": 5,
+      "minDistance": 0.005,
+      "maxDistance": 0.15
+    },
+    "toneMapping": {
+      "type": "ACESFilmicToneMapping",
+      "exposure": 0.95,
+      "whitePoint": 1.0
+    },
+    "antialiasing": {
+      "type": "fxaa",
+      "enabled": true
+    }
+  },
+  "vignette": {
+    "enabled": true,
+    "color1": "#3d2817",
+    "color2": "#8b6f47",
+    "smoothness": 0.2,
+    "brightness": 0.12,
+    "radiusScale": 1.5
+  },
+  "defaultMaterial": {
+    "color": "#d4a574",
+    "metalness": 0.0,
+    "roughness": 0.5,
+    "envMapIntensity": 0.8,
+    "aoMapIntensity": 1.2
+  },
+  "tags": ["character", "portrait", "warm", "soft"]
+}

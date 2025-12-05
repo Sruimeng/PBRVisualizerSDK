@@ -1,0 +1,171 @@
+{
+  "version": "1.0.0",
+  "title": "PBR Visualizer SDK 预设目录",
+  "description": "完整的场景预设和材质预设索引目录",
+  "lastUpdated": "2025-12-04",
+  "scenes": [
+    {
+      "id": "product-showcase",
+      "path": "/demo/assets/presets/scenes/product-showcase.json",
+      "name": "产品展示",
+      "description": "专业的产品展示场景，明亮专业，适合电商产品拍摄",
+      "tags": ["product", "commercial", "bright", "professional"],
+      "bloomStrength": 0.3,
+      "ssaoEnabled": false,
+      "vignetteEnabled": true
+    },
+    {
+      "id": "character-display",
+      "path": "/demo/assets/presets/scenes/character-display.json",
+      "name": "角色展示",
+      "description": "柔和温暖的角色展示场景，适合人物或角色模型展示",
+      "tags": ["character", "portrait", "warm", "soft"],
+      "bloomStrength": 0.4,
+      "ssaoEnabled": true,
+      "vignetteEnabled": true
+    },
+    {
+      "id": "tech-modern",
+      "path": "/demo/assets/presets/scenes/tech-modern.json",
+      "name": "科技现代",
+      "description": "冷色调现代科技风格，高对比度和发光效果突出产品的高端感",
+      "tags": ["tech", "modern", "cold", "high-contrast", "futuristic"],
+      "bloomStrength": 0.7,
+      "ssaoEnabled": true,
+      "vignetteEnabled": true
+    },
+    {
+      "id": "artistic-gallery",
+      "path": "/demo/assets/presets/scenes/artistic-gallery.json",
+      "name": "艺术画廊",
+      "description": "戏剧化的艺术画廊风格，高Bloom效果和对比的灯光营造艺术氛围",
+      "tags": ["artistic", "gallery", "dramatic", "high-bloom", "atmospheric"],
+      "bloomStrength": 1.2,
+      "ssaoEnabled": true,
+      "vignetteEnabled": true
+    },
+    {
+      "id": "minimal-clean",
+      "path": "/demo/assets/presets/scenes/minimal-clean.json",
+      "name": "极简清洁",
+      "description": "极简风格的清洁场景，最少后处理效果，突出模型本身细节",
+      "tags": ["minimal", "clean", "simple", "no-effects", "detail-focused"],
+      "bloomStrength": 0.0,
+      "ssaoEnabled": false,
+      "vignetteEnabled": false
+    }
+  ],
+  "materials": [
+    {
+      "id": "metals",
+      "path": "/demo/assets/presets/materials/metals.json",
+      "name": "金属材质库",
+      "description": "各种金属材质预设集合，从抛光到粗糙的金属效果",
+      "category": "metals",
+      "presetCount": 6,
+      "samples": [
+        {
+          "id": "polished-steel",
+          "name": "抛光钢",
+          "metalness": 0.95,
+          "roughness": 0.08
+        },
+        {
+          "id": "copper",
+          "name": "铜",
+          "metalness": 0.98,
+          "roughness": 0.12
+        }
+      ]
+    },
+    {
+      "id": "plastics",
+      "path": "/demo/assets/presets/materials/plastics.json",
+      "name": "塑料材质库",
+      "description": "各种塑料材质预设，从光面到哑光塑料",
+      "category": "plastics",
+      "presetCount": 6,
+      "samples": [
+        {
+          "id": "glossy-plastic",
+          "name": "光面塑料",
+          "metalness": 0.0,
+          "roughness": 0.15
+        },
+        {
+          "id": "matte-plastic",
+          "name": "哑光塑料",
+          "metalness": 0.0,
+          "roughness": 0.6
+        }
+      ]
+    },
+    {
+      "id": "glass",
+      "path": "/demo/assets/presets/materials/glass.json",
+      "name": "玻璃材质库",
+      "description": "各种玻璃材质预设，从清玻璃到彩色玻璃",
+      "category": "glass",
+      "presetCount": 6,
+      "samples": [
+        {
+          "id": "clear-glass",
+          "name": "清玻璃",
+          "metalness": 0.0,
+          "roughness": 0.05,
+          "transmission": 0.95
+        },
+        {
+          "id": "frosted-glass",
+          "name": "磨砂玻璃",
+          "metalness": 0.0,
+          "roughness": 0.4,
+          "transmission": 0.7
+        }
+      ]
+    },
+    {
+      "id": "special",
+      "path": "/demo/assets/presets/materials/special.json",
+      "name": "特殊材质库",
+      "description": "特殊材质预设集合，包括织物、木材、陶瓷等",
+      "category": "special",
+      "presetCount": 10,
+      "samples": [
+        {
+          "id": "fabric-silk",
+          "name": "丝绸",
+          "metalness": 0.0,
+          "roughness": 0.25
+        },
+        {
+          "id": "wood-dark",
+          "name": "深木",
+          "metalness": 0.0,
+          "roughness": 0.6
+        },
+        {
+          "id": "ceramic-glossy",
+          "name": "光面陶瓷",
+          "metalness": 0.0,
+          "roughness": 0.3
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenes": 5,
+    "totalMaterialLibraries": 4,
+    "totalMaterialPresets": 28,
+    "categories": ["metals", "plastics", "glass", "special"],
+    "lastUpdated": "2025-12-04"
+  },
+  "usage": {
+    "scenes": "Load scene presets using GlobalState interface, supports all post-processing effects and environment configuration",
+    "materials": "Apply material presets using MaterialState interface, supports PBR properties like metalness, roughness, and envMapIntensity",
+    "example": {
+      "sceneUsage": "import scenePreset from '/demo/assets/presets/scenes/product-showcase.json'",
+      "materialUsage": "import materialLibrary from '/demo/assets/presets/materials/metals.json'"
+    }
+  }
+}

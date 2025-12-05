@@ -1,0 +1,79 @@
+{
+  "category": "metals",
+  "name": "金属材质库",
+  "description": "各种金属材质预设集合，从抛光到粗糙的金属效果",
+  "presets": [
+    {
+      "id": "polished-steel",
+      "name": "抛光钢",
+      "description": "光滑反光的抛光钢铁材质",
+      "material": {
+        "color": "#b8b8b8",
+        "metalness": 0.95,
+        "roughness": 0.08,
+        "envMapIntensity": 1.3,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "brushed-aluminum",
+      "name": "拉丝铝",
+      "description": "拉丝铝合金材质，略显粗糙的金属感",
+      "material": {
+        "color": "#d0d0d0",
+        "metalness": 0.9,
+        "roughness": 0.25,
+        "envMapIntensity": 1.1,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "copper",
+      "name": "铜",
+      "description": "温暖的铜金属材质",
+      "material": {
+        "color": "#b87333",
+        "metalness": 0.98,
+        "roughness": 0.12,
+        "envMapIntensity": 1.2,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "brass",
+      "name": "黄铜",
+      "description": "深金色的黄铜材质",
+      "material": {
+        "color": "#cd7f32",
+        "metalness": 0.95,
+        "roughness": 0.15,
+        "envMapIntensity": 1.2,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "rusted-iron",
+      "name": "生锈铁",
+      "description": "粗糙的生锈铁材质",
+      "material": {
+        "color": "#8b4513",
+        "metalness": 0.4,
+        "roughness": 0.8,
+        "envMapIntensity": 0.8,
+        "aoMapIntensity": 1.3
+      }
+    },
+    {
+      "id": "chrome",
+      "name": "镀铬",
+      "description": "高反射度的镜面镀铬材质",
+      "material": {
+        "color": "#e8e8e8",
+        "metalness": 1.0,
+        "roughness": 0.05,
+        "envMapIntensity": 1.5,
+        "aoMapIntensity": 1.0
+      }
+    }
+  ]
+}

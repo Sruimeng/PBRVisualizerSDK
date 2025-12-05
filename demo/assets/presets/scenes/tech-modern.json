@@ -1,0 +1,70 @@
+{
+  "id": "tech-modern",
+  "name": "科技现代",
+  "description": "冷色调现代科技风格，高对比度和发光效果突出产品的高端感",
+  "environment": {
+    "url": "/demo/hdr/env.hdr",
+    "intensity": 1.4,
+    "studio": true
+  },
+  "camera": {
+    "position": {
+      "x": 2.5,
+      "y": 1.8,
+      "z": 2.5
+    },
+    "target": {
+      "x": 0,
+      "y": 0.4,
+      "z": 0
+    },
+    "fov": 40,
+    "near": 0.1,
+    "far": 1000,
+    "controls": {
+      "enabled": true,
+      "autoRotate": true,
+      "autoRotateSpeed": 3.0
+    }
+  },
+  "postProcessing": {
+    "enabled": true,
+    "bloom": {
+      "enabled": true,
+      "strength": 0.7,
+      "radius": 0.6,
+      "threshold": 0.6
+    },
+    "ssao": {
+      "enabled": true,
+      "kernelRadius": 6,
+      "minDistance": 0.008,
+      "maxDistance": 0.2
+    },
+    "toneMapping": {
+      "type": "ACESFilmicToneMapping",
+      "exposure": 1.15,
+      "whitePoint": 1.0
+    },
+    "antialiasing": {
+      "type": "fxaa",
+      "enabled": true
+    }
+  },
+  "vignette": {
+    "enabled": true,
+    "color1": "#0a1929",
+    "color2": "#1e3a8a",
+    "smoothness": 0.3,
+    "brightness": 0.08,
+    "radiusScale": 1.4
+  },
+  "defaultMaterial": {
+    "color": "#1a1a2e",
+    "metalness": 0.7,
+    "roughness": 0.15,
+    "envMapIntensity": 1.5,
+    "aoMapIntensity": 0.9
+  },
+  "tags": ["tech", "modern", "cold", "high-contrast", "futuristic"]
+}

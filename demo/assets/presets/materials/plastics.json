@@ -1,0 +1,81 @@
+{
+  "category": "plastics",
+  "name": "塑料材质库",
+  "description": "各种塑料材质预设，从光面到哑光塑料",
+  "presets": [
+    {
+      "id": "glossy-plastic",
+      "name": "光面塑料",
+      "description": "光滑反光的光面塑料材质",
+      "material": {
+        "color": "#ffffff",
+        "metalness": 0.0,
+        "roughness": 0.15,
+        "envMapIntensity": 0.9,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "matte-plastic",
+      "name": "哑光塑料",
+      "description": "无反光的哑光塑料材质",
+      "material": {
+        "color": "#cccccc",
+        "metalness": 0.0,
+        "roughness": 0.6,
+        "envMapIntensity": 0.5,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "red-plastic",
+      "name": "红色塑料",
+      "description": "鲜艳的红色光面塑料",
+      "material": {
+        "color": "#e63946",
+        "metalness": 0.0,
+        "roughness": 0.2,
+        "envMapIntensity": 0.8,
+        "aoMapIntensity": 1.0
+      }
+    },
+    {
+      "id": "black-plastic",
+      "name": "黑色塑料",
+      "description": "深黑色的哑光塑料材质",
+      "material": {
+        "color": "#1a1a1a",
+        "metalness": 0.0,
+        "roughness": 0.7,
+        "envMapIntensity": 0.4,
+        "aoMapIntensity": 1.1
+      }
+    },
+    {
+      "id": "translucent-plastic",
+      "name": "半透明塑料",
+      "description": "半透明的彩色塑料材质",
+      "material": {
+        "color": "#a8e6cf",
+        "metalness": 0.0,
+        "roughness": 0.4,
+        "envMapIntensity": 0.7,
+        "aoMapIntensity": 0.9,
+        "transmission": 0.3,
+        "opacity": 0.8
+      }
+    },
+    {
+      "id": "textured-plastic",
+      "name": "纹理塑料",
+      "description": "带有纹理的工程塑料",
+      "material": {
+        "color": "#505050",
+        "metalness": 0.0,
+        "roughness": 0.75,
+        "envMapIntensity": 0.5,
+        "aoMapIntensity": 1.2
+      }
+    }
+  ]
+}
